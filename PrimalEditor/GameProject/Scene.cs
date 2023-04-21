@@ -5,6 +5,7 @@ using System.Linq;
 using System.Runtime.Serialization;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Documents;
 
 namespace PrimalEditor.GameProject
 {
@@ -28,6 +29,24 @@ namespace PrimalEditor.GameProject
 
         [DataMember]
         public Project Project { get; private set; }
+
+        private bool _isActive;
+
+        [DataMember]
+        public bool IsActive
+        {
+            get { return _isActive; }
+
+            set
+            { 
+                if(_isActive != value)
+                {
+                    _isActive = value;
+                    OnPropertyChanged(nameof(IsActive));
+                }
+            }
+                
+        }
 
         public Scene(Project project, string name)
         {

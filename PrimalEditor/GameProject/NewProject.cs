@@ -94,7 +94,6 @@ namespace PrimalEditor.GameProject
         }
 
 
-
         private ObservableCollection<ProjectTemplate> _projectTemplates = new ObservableCollection<ProjectTemplate>();
         public ReadOnlyObservableCollection<ProjectTemplate> ProjectTemplates
         { get; }
@@ -156,7 +155,7 @@ namespace PrimalEditor.GameProject
                 var dirInfo = new DirectoryInfo(path+@".Primal\");
                 dirInfo.Attributes |= FileAttributes.Hidden;
                 File.Copy(template.IconFilePath, Path.GetFullPath(Path.Combine(dirInfo.FullName, "Icon.png")));
-                File.Copy(template.IconFilePath, Path.GetFullPath(Path.Combine(dirInfo.FullName, "Screenshot.png")));
+                File.Copy(template.ScreenshotFilePath, Path.GetFullPath(Path.Combine(dirInfo.FullName, "Screenshot.png")));
 
                 //var project = new Project(ProjectName, path);
                 //Serializer.ToFile(project, path + $"{ProjectName}" + Project.Extension);
