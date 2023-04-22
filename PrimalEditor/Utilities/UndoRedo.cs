@@ -6,7 +6,11 @@ using System.Threading.Tasks;
 
 namespace PrimalEditor.Utilities
 {
-    internal class UndoRedo
+    interface IUndoRedo
+    {
+        string Name { get; }
+    }
+    class UndoRedo
     {
 
     }
