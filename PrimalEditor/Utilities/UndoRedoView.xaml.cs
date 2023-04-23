@@ -12,16 +12,15 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
-using PrimalEditor.GameProject;
 
-namespace PrimalEditor.Editors
+namespace PrimalEditor.Utilities
 {
     /// <summary>
-    /// ProjectLayoutView.xaml에 대한 상호 작용 논리
+    /// UndoRedoView.xaml에 대한 상호 작용 논리
     /// </summary>
-    public partial class ProjectLayoutView : UserControl
+    public partial class UndoRedoView : UserControl
     {
-        public ProjectLayoutView()
+        public UndoRedoView()
         {
             InitializeComponent();
         }
