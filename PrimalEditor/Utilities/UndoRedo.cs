@@ -31,16 +31,26 @@ namespace PrimalEditor.Utilities
         }
 
         public UndoRedoAction(Action undo, Action redo, string name)
-            :this(name)
+            : this(name)
         {
             Debug.Assert(undo != null && redo != null);
             _undoAction = undo;
-            _redoAction = redo;            
+            _redoAction = redo;
+        }
+
+        public UndoRedoAction(string property, object instance, object undoValue, object redoValue, string name) :
+            this(
+                () => instance.GetType().GetProperty(property).SetValue(instance, undoValue),
+                () => instance.GetType().GetProperty(property).SetValue(instance, redoValue),
+                name)
+        {
+
         }
     }
 
     public class UndoRedo
     {
+        private bool _enableAdd = true;
         private readonly ObservableCollection<IUndoRedo> _redoList = new ObservableCollection<IUndoRedo>();
         private readonly ObservableCollection<IUndoRedo> _undoList = new ObservableCollection<IUndoRedo>();
         public ReadOnlyObservableCollection<IUndoRedo> RedoList { get; }
@@ -54,28 +64,35 @@ namespace PrimalEditor.Utilities
 
         public void Add(IUndoRedo cmd)
         {
-            _undoList.Add(cmd);
-            _redoList.Clear();
+            if (_enableAdd)
+            {
+                _undoList.Add(cmd);
+                _redoList.Clear();
+            }
         }
 
         public void Undo()
         {
-            if(_undoList.Any())
+            if (_undoList.Any())
             {
                 var cmd = _undoList.Last();
                 _undoList.RemoveAt(_undoList.Count - 1);
+                _enableAdd = false;
                 cmd.Undo();
+                _enableAdd = true;
                 _redoList.Insert(0, cmd);
             }
         }
 
         public void Redo()
         {
-            if(_redoList.Any())
+            if (_redoList.Any())
             {
                 var cmd = _redoList.First();
                 _redoList.RemoveAt(0);
+                _enableAdd = false;
                 cmd.Redo();
+                _enableAdd = true;
                 _undoList.Add(cmd);
             }
         }
