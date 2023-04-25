@@ -1,9 +1,7 @@
 #pragma once
-
-#include "CommonHeader.h"
+#include "CommonHeaders.h"
 #include "Id.h"
+#include "..\EngineAPI\GameEntity.h"
 
-namespace primal::game_entity {
-	DEFINE_TYPED_ID(entity_id);
-}
+
 

@@ -18,6 +18,6 @@ using s8 = int8_t;
 constexpr u64 u64_invalid_id{ 0xffff'ffff'ffff'ffffui64 };
 constexpr u32 u32_invalid_id{ 0xffff'ffff'ffffui32 };
 constexpr u16 u16_invalid_id{ 0xffff'ffffui16 };
-constexpr u8 u8_invalid_id{ 0xffffi8 };
+constexpr u8 u8_invalid_id{ 0xffffui8 };
 
 using f32 = float;
