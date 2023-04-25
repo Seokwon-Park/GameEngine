@@ -7,7 +7,7 @@ namespace primal::id
 	using id_type = u32;
 
 	namespace internal {
-		constexpr u32 generation_bits{ 8 };
+		constexpr u32 generation_bits{ 10 };
 		constexpr u32 index_bits{ sizeof(id_type) * 8 - generation_bits };
 		constexpr id_type index_mask{ (id_type{1} << index_bits) - 1 }; // 24비트 범위를 전부 1로
 		constexpr id_type generation_mask{ (id_type{1} << generation_bits) - 1 }; // 8비트 범위를 전부 1로
@@ -43,7 +43,7 @@ namespace primal::id
 	constexpr id_type new_generation(id_type id)
 	{
 		const id_type generation{ id::generation(id) + 1 };
-		assert(generation < ((u64)1 << internal::generation_bits) -1);
+		assert(generation < (((u64)1 << internal::generation_bits) -1));
 		return index(id) | (generation << internal::index_bits);
 		//ex) id = 1001일 때, generation(id)으로 호출 >>(right shift) 해서 0001 + 1 하면 0001
 		//index_bits만큼 다시 올리면 generation은 2000에 index(id)와 or 연산으로 2001
