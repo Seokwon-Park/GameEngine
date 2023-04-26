@@ -3,12 +3,15 @@
 
 namespace primal::math
 {
+	using namespace DirectX::SimpleMath;
 	constexpr float pi = DirectX::XM_PI;
 	constexpr float epsilon = 1e-5f;
 #if defined(_WIN64)
 	//DirectX::SimpleMath
+	using DirectX::SimpleMath::Vector2;
 	using DirectX::SimpleMath::Vector3;
 	using DirectX::SimpleMath::Vector4;
+	using DirectX::SimpleMath::Quaternion;
 	//XMFLOAT
 	using v2 = DirectX::XMFLOAT2;
 	using v2a = DirectX::XMFLOAT2A;
