@@ -58,10 +58,9 @@ namespace PrimalEditor.Utilities.Controls
             Mouse.Capture(sender as UIElement);
             _captured = true;
             _valueChanged = false;
-            e.Handled = true;
-
-            _multiplier = 0.01;
+            e.Handled = true;            
             _mouseXStart = e.GetPosition(this).X;
+            Focus();
         }
 
         private void OnTextBlock_Mouse_LBU(object sender, MouseButtonEventArgs e)
