@@ -64,7 +64,7 @@ namespace PrimalEditor.Dictionaries
             }
         }
 
-        private void OnTextBoxRename_LostFocus(object sender, KeyEventArgs e)
+        private void OnTextBoxRename_LostFocus(object sender, RoutedEventArgs e)
         {
             var textBox = sender as TextBox;
             var exp = textBox.GetBindingExpression(TextBox.TextProperty);
@@ -93,11 +93,6 @@ namespace PrimalEditor.Dictionaries
         {
             var window = (Window)((FrameworkElement)sender).TemplatedParent;
             window.WindowState = WindowState.Minimized;
-        }
-
-        private void OnTextBoxRename_LostFocus(object sender, RoutedEventArgs e)
-        {
-
         }
     }
 }

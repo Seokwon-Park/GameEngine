@@ -15,8 +15,19 @@ namespace PrimalEditor.Utilities.Controls
     {
         private double _originalValue;
         private double _mouseXStart;
+        private double _multiplier;
         private bool _captured = false;
         private bool _valueChanged = false;
+
+        public double Multiplier
+        {
+            get => (double)GetValue(MultiplierProperty);
+            set => SetValue(MultiplierProperty, value);
+        }
+
+        public static readonly DependencyProperty MultiplierProperty =
+            DependencyProperty.Register(nameof(Multiplier), typeof(double), typeof(NumberBox),
+                new PropertyMetadata(1.0));
 
         public string Value
         {
@@ -76,7 +87,11 @@ namespace PrimalEditor.Utilities.Controls
                 var d = mouseX - _mouseXStart;
                 if (Math.Abs(d) > SystemParameters.MinimumHorizontalDragDistance)
                 {
-                    var newValue = _originalValue + (d);
+                    if (Keyboard.Modifiers.HasFlag(ModifierKeys.Control)) _multiplier = 0.001;
+                    else if (Keyboard.Modifiers.HasFlag(ModifierKeys.Shift)) _multiplier = 0.1;
+                    else _multiplier = 0.01;
+
+                    var newValue = _originalValue + (d * _multiplier * Multiplier);
                     Value = newValue.ToString("0.#####");
                     _valueChanged = true;
                 }
