@@ -3,7 +3,7 @@
 #endif
 
 #include "CommonHeaders.h"
-#include "id.h"
+#include "Id.h"
 #include "..\Engine\Components\Entity.h"
 #include "..\Engine\Components\Transform.h"
 

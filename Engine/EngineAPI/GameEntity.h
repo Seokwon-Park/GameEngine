@@ -53,11 +53,11 @@ namespace primal
 
 #define REGISTER_SCRIPT(TYPE)											\
 		class TYPE;														\
-		namespace {														\
-		const u8 _reg##TYPE												\
-		{ primal::script::detail::register_script(						\
+		namespace { 													\
+			const u8 _reg##TYPE											\
+			{ primal::script::detail::register_script(					\
 				primal::script::detail::string_hash()(#TYPE),			\
-				& primal::script::detail::create_script<TYPE>) };		\
+				&primal::script::detail::create_script<TYPE>) };		\
 			}
 		} // namespace detail
 	} // namespace script
