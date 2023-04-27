@@ -14,7 +14,6 @@ namespace PrimalEditor.Utilities.Controls
     class NumberBox : Control
     {
         private double _originalValue;
-        private double _multiplier;
         private double _mouseXStart;
         private bool _captured = false;
         private bool _valueChanged = false;
@@ -84,8 +83,6 @@ namespace PrimalEditor.Utilities.Controls
 
             }
         }
-
-
 
         static NumberBox()
         {
