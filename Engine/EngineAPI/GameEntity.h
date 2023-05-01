@@ -57,14 +57,13 @@ namespace primal
 
 			//if def 레벨 편집기와 함께 사용하기 위해 빌드하지 않을때마다 컴파일에서 제외
 #ifdef USE_WITH_EDITOR
-			u8 add_script_name(const char* name);
+		u8 add_script_name(const char* name);
 #define REGISTER_SCRIPT(TYPE)											\
 		namespace { 													\
-		const u8 _reg##TYPE												\
+		const u8 _reg_##TYPE											\
 		{ primal::script::detail::register_script(						\
 				primal::script::detail::string_hash()(#TYPE),			\
 				&primal::script::detail::create_script<TYPE>) };		\
-		}																\
 		const u8 _name_##TYPE											\
 		{ primal::script::detail::add_script_name(#TYPE) };				\
 		}

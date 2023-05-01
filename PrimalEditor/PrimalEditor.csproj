@@ -27,6 +27,7 @@
   </ItemGroup>
 
   <ItemGroup>
+
     <COMReference Include="EnvDTE">
       <WrapperTool>tlbimp</WrapperTool>
       <VersionMinor>0</VersionMinor>
