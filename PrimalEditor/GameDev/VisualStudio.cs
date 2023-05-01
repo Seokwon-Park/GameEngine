@@ -1,10 +1,10 @@
-﻿using EnvDTE;
-using EnvDTE80;
+﻿using PrimalEditor.GameProject;
 using PrimalEditor.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
@@ -17,6 +17,9 @@ namespace PrimalEditor.GameDev
 {
     static class VisualStudio
     {
+        public static bool BuildSucceeded { get; private set; } = true;
+        public static bool BuildDone { get; private set; } = true;
+
         private static EnvDTE80.DTE2 _vsInstance = null;
         private static readonly string _progID = "VisualStudio.DTE.17.0";
         [MarshalAs(UnmanagedType.LPStr)]
@@ -135,6 +138,77 @@ namespace PrimalEditor.GameDev
                 return false;
             }
             return true;
-        }   
+        }
+
+        private static void OnBuildSolutionBegin(string project, string projectConfig, string platform, string solutionConfig)
+        {
+            Logger.Log(MessageType.Info, $"Building {project}, {projectConfig}, {platform}, {solutionConfig}");
+        }
+
+        private static void OnBuildSolutionDone(string project, string projectConfig, string platform, string solutionConfig, bool success)
+        {
+            if (BuildDone) return;
+
+            if (success) Logger.Log(MessageType.Info, $"Building {projectConfig} configuration succeeded");
+            else Logger.Log(MessageType.Error, $"Building {projectConfig} configuration failed");
+
+            BuildDone = true;
+            BuildSucceeded = success;
+        }
+
+        public static bool IsDebugging()
+        {
+            bool result = false;
+
+            for (int i = 0; i < 3; i++)
+            {
+                try
+                {
+                    result = _vsInstance != null &&
+                        (_vsInstance.Debugger.CurrentProgram != null || _vsInstance.Debugger.CurrentMode == EnvDTE.dbgDebugMode.dbgRunMode);
+                }
+                catch (Exception ex)
+                {
+                    Debug.Write(ex.Message);
+                    if (!result) System.Threading.Thread.Sleep(1000);
+                }
+            }
+            return result;  
+        }
+
+        public static void BuildSolution(Project project, string configName, bool showWindow =true)
+        {
+            if(IsDebugging())
+            {
+                Logger.Log(MessageType.Error, "Visual Studio is currently running a process.");
+                return;
+            }
+
+            OpenVisualStudio(project.Solution);
+            BuildDone = BuildSucceeded = false;
+
+            for (int i = 0; i < 3; i++)
+            {
+                try
+                {
+                    if (!_vsInstance.Solution.IsOpen) _vsInstance.Solution.Open(project.Solution);
+                    _vsInstance.MainWindow.Visible = showWindow;
+
+                    _vsInstance.Events.BuildEvents.OnBuildProjConfigBegin += OnBuildSolutionBegin;
+                    _vsInstance.Events.BuildEvents.OnBuildProjConfigDone += OnBuildSolutionDone;
+
+                    _vsInstance.Solution.SolutionBuild.SolutionConfigurations.Item(configName).Activate();
+                    _vsInstance.ExecuteCommand("Build.BuildSolution");
+                }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine(ex.Message);
+                    Debug.WriteLine($"Attempt {i}: failed to build {project.Name}");
+                    System.Threading.Thread.Sleep(1000);
+                }
+            }
+        }
+
+      
     }
 }
