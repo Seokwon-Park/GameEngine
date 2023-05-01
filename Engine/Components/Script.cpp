@@ -21,6 +21,18 @@ namespace primal::script
 			return reg;
 		}
 
+#ifdef USE_WITH_EDITOR
+		utl::vector<std::string>& script_names()
+		{
+			//NOTE: we put this static variable in a function because of
+			//		the initialization order of static data. This wya, we can
+			//		be certain that the data is initialized before accessing it.
+			static utl::vector < std::string> names;
+			return names;
+		}
+#endif // USE_WITH_EDITOR
+
+
 		bool exists(script_id id)
 		{
 			assert(id::is_valid(id));
@@ -40,6 +52,25 @@ namespace primal::script
 			assert(result);
 			return result;
 		}
+
+		script_creator get_script_creator(size_t tag)
+		{
+			//try to find script
+			auto script = primal::script::registery().find(tag);
+			//if find succeed, script different with end(), assert tag is script.first element size_t;
+			assert(script != primal::script::registery().end() && script->first == tag);
+			//return created  script ptr;
+			return script->second;
+		}
+
+#ifdef USE_WITH_EDITOR
+		u8 add_script_name(const char* name)
+		{
+			script_names().emplace_back(name);
+			return true;
+		}
+#endif // USE_WITH_EDITOR
+
 	}// namespace detail
 
 	component create(init_info info, game_entity::entity entity)
@@ -66,7 +97,7 @@ namespace primal::script
 		assert(id::is_valid(id));
 		const id::id_type index{ (id::id_type)entity_scripts.size() };
 		entity_scripts.emplace_back(info.script_creator(entity));
-		assert(entity_scripts.back()->get_id() == entity.get_id());		
+		assert(entity_scripts.back()->get_id() == entity.get_id());
 		id_mapping[id::index(id)] = index;
 		return component{ id };
 	}
@@ -82,3 +113,22 @@ namespace primal::script
 		id_mapping[id::index(id)] = id::invalid_id;
 	}
 }
+
+#ifdef USE_WITH_EDITOR
+#include <atlsafe.h>
+extern "C" __declspec(dllexport)
+LPSAFEARRAY
+get_script_names()
+{
+	const u32 size{ (u32)primal::script::script_names().size() };//script_name에 대한 memory allocation
+	if (!size) return nullptr;//size = 0 이면 no_scirpt
+	CComSafeArray<BSTR> names(size);//size에 대한 array 할당
+	for (u32 i{ 0 }; i < size; ++i)
+	{
+		//nc string to bstr format
+		//https://learn.microsoft.com/ko-kr/previous-versions/windows/desktop/automat/bstr
+		names.SetAt(i, A2BSTR_EX(primal::script::script_names()[i].c_str()), false);
+	}
+	return names.Detach();
+}
+#endif // USE_WITH_EDITOR
