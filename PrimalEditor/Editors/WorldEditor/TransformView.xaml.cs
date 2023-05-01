@@ -63,7 +63,7 @@ namespace PrimalEditor.Editors
         private Action GetRotationAction() => GetAction((x) => (x, x.Rotation), (x) => x.transform.Rotation = x.Item2);
         private Action GetScaleAction() => GetAction((x) => (x, x.Scale), (x) => x.transform.Scale = x.Item2);
       
-        private void RecordAction(Action redoAction, string name)
+        private void RecordActions(Action redoAction, string name)
         {
             if (_propertyChanged)
             {
@@ -82,8 +82,8 @@ namespace PrimalEditor.Editors
 
         private void OnPosition_VectorBox_PreviewMouse_LBU(object sender, MouseButtonEventArgs e)
         {
-            
-            RecordAction(GetPositionAction(), "Position changed");
+
+            RecordActions(GetPositionAction(), "Position changed");
         }
 
         //Rotation
@@ -96,7 +96,7 @@ namespace PrimalEditor.Editors
         private void OnRotation_VectorBox_PreviewMouse_LBU(object sender, MouseButtonEventArgs e)
         {
 
-            RecordAction(GetRotationAction(), "Rotation changed");
+            RecordActions(GetRotationAction(), "Rotation changed");
         }
 
         //Scale
@@ -109,7 +109,7 @@ namespace PrimalEditor.Editors
         private void OnScale_VectorBox_PreviewMouse_LBU(object sender, MouseButtonEventArgs e)
         {
 
-            RecordAction(GetScaleAction(), "Scale changed");
+            RecordActions(GetScaleAction(), "Scale changed");
         }
 
         private void OnPosition_VectorBox_LostKeyboardFocus(object sender, KeyboardFocusChangedEventArgs e)

@@ -23,7 +23,7 @@ namespace PrimalEditor
     /// </summary>
     public partial class MainWindow : Window
     {
-        public static string PrimalPath { get; private set; } = @"C:\Users\rty33\source\repos\Primal";
+        public static string PrimalPath { get; private set; }
 
         public MainWindow()
         {
