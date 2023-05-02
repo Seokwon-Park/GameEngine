@@ -69,6 +69,7 @@ namespace primal::platform
 				get_from_handle(hwnd).is_closed = true;
 				break;
 			}
+
 			LONG_PTR long_ptr{ GetWindowLongPtr(hwnd,0) };
 			return long_ptr
 				? ((window_proc)long_ptr)(hwnd, msg, wparam, lparam)
@@ -198,7 +199,7 @@ namespace primal::platform
 		info.style |= parent ? WS_CHILD : WS_OVERLAPPEDWINDOW;
 
 		// Create an instance of window class
-		HWND hwnd = CreateWindowEx(
+		info.hwnd = CreateWindowEx(
 			0,					// extended style
 			wc.lpszClassName,	// window class name
 			caption,			// instance title
@@ -213,6 +214,7 @@ namespace primal::platform
 
 		if (info.hwnd)
 		{
+			SetLastError(0);
 			const window_id id{ add_to_windows(info) };
 			SetWindowLongPtr(info.hwnd, GWLP_USERDATA, (LONG_PTR)id);
 			// Set in the "extra" bytes the pointer to the window callback function
