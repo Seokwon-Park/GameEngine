@@ -1,9 +1,12 @@
 ﻿using PrimalEditor.Components;
 using PrimalEditor.EngineAPIStructs;
+using PrimalEditor.GameProject;
+using PrimalEditor.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
+using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
@@ -65,7 +68,22 @@ namespace PrimalEditor.DllWrappers
                 }
                 // script component
                 {
-                    //var c = entity.GetComponent<Script>();
+                    // NOTE : 현재 프로젝트가 null이 아니어야 비로소 game code dll이 로드 되었는지 아닌지 말할 수 있다. 
+                    //        이 경우에는 script component의 entity 생성이 game codedll이 로드될때까지 연기된다.
+                    //        (나중에 로드)
+                    var c = entity.GetComponent<Script>();
+                    //Script Component가 존재 && 프로젝트가 로드
+                    if (c != null && Project.Current != null)
+                    {
+                        if (Project.Current.AvailableScripts.Contains(c.Name))
+                        {
+                            desc.Script.ScriptCreator = GetScriptCreator(c.Name);
+                        }
+                        else
+                        {
+                            Logger.Log(MessageType.Error, $"Unable to find script with name {c.Name}. Game entity will be created without script component!");
+                        }
+                    }
                 }
                 return CreateGameEntity(desc);
             }

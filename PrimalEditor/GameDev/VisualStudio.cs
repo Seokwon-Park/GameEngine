@@ -51,18 +51,18 @@ namespace PrimalEditor.GameDev
                     if (hResult < 0 || bindCtx == null) throw new COMException($"CreatedBindCtx() returned HREUSLT: {hResult:X8}");
 
                     IMoniker[] currentMoniker = new IMoniker[1];
-                    while(monikerTable.Next(1, currentMoniker, IntPtr.Zero) == 0)
+                    while (monikerTable.Next(1, currentMoniker, IntPtr.Zero) == 0)
                     {
                         string name = string.Empty;
                         currentMoniker[0]?.GetDisplayName(bindCtx, null, out name);
-                        if(name.Contains(_progID))
+                        if (name.Contains(_progID))
                         {
                             hResult = rot.GetObject(currentMoniker[0], out object obj);
                             if (hResult < 0 || obj == null) throw new COMException($"Running object table's GetObject() returned HRESULT: {hResult:X8}");
 
                             EnvDTE80.DTE2 dte = obj as EnvDTE80.DTE2;
                             var solutionName = dte.Solution.FullName;
-                            if(solutionName == solutionPath)
+                            if (solutionName == solutionPath)
                             {
                                 _vsInstance = dte;
                                 break;
@@ -92,7 +92,7 @@ namespace PrimalEditor.GameDev
         }
         public static void CloseVisualStudio()
         {
-            if(_vsInstance?.Solution.IsOpen == true)
+            if (_vsInstance?.Solution.IsOpen == true)
             {
                 _vsInstance.ExecuteCommand("File.SaveAll");
                 _vsInstance.Solution.Close(true);
@@ -106,16 +106,16 @@ namespace PrimalEditor.GameDev
             OpenVisualStudio(solution);
             try
             {
-                if(_vsInstance != null)
+                if (_vsInstance != null)
                 {
                     if (!_vsInstance.Solution.IsOpen) _vsInstance.Solution.Open(solution);
                     else _vsInstance.ExecuteCommand("File.SaveAll");
 
-                    foreach(EnvDTE.Project project in _vsInstance.Solution.Projects)
+                    foreach (EnvDTE.Project project in _vsInstance.Solution.Projects)
                     {
                         if (project.UniqueName.Contains(projectName))
                         {
-                            foreach(var file in files)
+                            foreach (var file in files)
                             {
                                 project.ProjectItems.AddFromFile(file);
                             }
@@ -123,9 +123,9 @@ namespace PrimalEditor.GameDev
                     }
 
                     var cpp = files.FirstOrDefault(x => Path.GetExtension(x) == ".cpp");
-                    if(!string.IsNullOrEmpty(cpp))
+                    if (!string.IsNullOrEmpty(cpp))
                     {
-                        _vsInstance.ItemOperations.OpenFile(cpp, vsViewKindTextView).Visible = true;    
+                        _vsInstance.ItemOperations.OpenFile(cpp, vsViewKindTextView).Visible = true;
                     }
                     _vsInstance.MainWindow.Activate();
                     _vsInstance.MainWindow.Visible = true;
@@ -158,27 +158,29 @@ namespace PrimalEditor.GameDev
 
         public static bool IsDebugging()
         {
-            bool result = false;
-
-            for (int i = 0; i < 3; i++)
+            bool result = false;            
+            bool tryAgain = true;
+            // if try is success => break loop
+            for (int i = 0; i < 3 && tryAgain; i++)
             {
                 try
                 {
                     result = _vsInstance != null &&
                         (_vsInstance.Debugger.CurrentProgram != null || _vsInstance.Debugger.CurrentMode == EnvDTE.dbgDebugMode.dbgRunMode);
+                    tryAgain = false;
                 }
                 catch (Exception ex)
                 {
                     Debug.Write(ex.Message);
-                    if (!result) System.Threading.Thread.Sleep(1000);
+                    System.Threading.Thread.Sleep(1000);
                 }
             }
-            return result;  
+            return result;
         }
 
-        public static void BuildSolution(Project project, string configName, bool showWindow =true)
+        public static void BuildSolution(Project project, string configName, bool showWindow = true)
         {
-            if(IsDebugging())
+            if (IsDebugging())
             {
                 Logger.Log(MessageType.Error, "Visual Studio is currently running a process.");
                 return;
@@ -187,7 +189,7 @@ namespace PrimalEditor.GameDev
             OpenVisualStudio(project.Solution);
             BuildDone = BuildSucceeded = false;
 
-            for (int i = 0; i < 3; i++)
+            for (int i = 0; i < 3 && !BuildDone; i++)
             {
                 try
                 {
@@ -217,6 +219,6 @@ namespace PrimalEditor.GameDev
             }
         }
 
-      
+
     }
 }
