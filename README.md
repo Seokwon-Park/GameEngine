@@ -9,6 +9,4 @@ define 매크로 디버깅이 어렵기 때문에 처음 작성할 때 철저하
 
 #### 2023-05-02   
 LNK1104 cannot open file 'engine.lib'   
-두 번 빌드하면 잘 실행된다 => Build Order issue   
-engine.lib을 build 하기 전에 이 lib을 사용하는 다른 프로젝트를 build 해버려서 생기는 문제   
-Solution 우클릭 Project Build Order.. 설정
+두 번 빌드하면 잘 됨. 대체 뭐가 문제?
