@@ -66,7 +66,8 @@ namespace primal::platform
 			switch (msg)
 			{
 			case WM_DESTROY:
-				get_from_handle(hwnd);
+				get_from_handle(hwnd).is_closed = true;
+				break;
 			}
 			LONG_PTR long_ptr{ GetWindowLongPtr(hwnd,0) };
 			return long_ptr
