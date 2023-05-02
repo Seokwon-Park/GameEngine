@@ -1,7 +1,6 @@
 #pragma once
 #include "CommonHeaders.h"
 
-
 namespace primal::id
 {
 	using id_type = u32;
@@ -13,7 +12,7 @@ namespace primal::id
 		constexpr id_type generation_mask{ (id_type{1} << generation_bits) - 1 }; // 8비트 범위를 전부 1로
 		//&연산을 통해 마스킹 가능
 	} // detail namespace 
-	constexpr id_type invalid_id{ id_type(-1)};
+	constexpr id_type invalid_id{ id_type(-1) };
 	//모든 유형의 id_type(u16, u32, u64)에 대해 유효하지 않은 id
 	constexpr u32 min_deleted_elements{ 1024 };
 	// 배열의 요소를 1024 제거한후 이 크기가 더 크면 사용가능한 슬롯에 다시 쓰기 시작한다.
@@ -43,7 +42,7 @@ namespace primal::id
 	constexpr id_type new_generation(id_type id)
 	{
 		const id_type generation{ id::generation(id) + 1 };
-		assert(generation < (((u64)1 << detail::generation_bits) -1));
+		assert(generation < (((u64)1 << detail::generation_bits) - 1));
 		return index(id) | (generation << detail::index_bits);
 		//ex) id = 1001일 때, generation(id)으로 호출 >>(right shift) 해서 0001 + 1 하면 0001
 		//index_bits만큼 다시 올리면 generation은 2000에 index(id)와 or 연산으로 2001
