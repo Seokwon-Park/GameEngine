@@ -15,7 +15,8 @@
     </UserControl.Resources>
     <UserControl.InputBindings>
         <KeyBinding Command="{Binding UndoCommand}" Key="Z" Modifiers="Ctrl"/>
-        <KeyBinding Command="{Binding RedoCommand}" Key="Y" Modifiers="Ctrl+Shift"/>
+        <KeyBinding Command="{Binding RedoCommand}" Key="Y" Modifiers="Ctrl"/>
+        <KeyBinding Command="{Binding RedoCommand}" Key="Z" Modifiers="Ctrl+Shift"/>
         <KeyBinding Command="{Binding SaveCommand}" Key="S" Modifiers="Ctrl"/>
         <KeyBinding Command="{Binding DebugStartCommand}" Key="F5"/>
         <KeyBinding Command="{Binding DebugStartWithoutDebuggingCommand}" Key="F5" Modifiers="Ctrl"/>

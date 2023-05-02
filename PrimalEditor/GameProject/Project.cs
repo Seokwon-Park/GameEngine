@@ -128,7 +128,7 @@ namespace PrimalEditor.GameProject
             }, x => !x.IsActive);
 
             UndoCommand = new RelayCommand<object>(x => UndoRedo.Undo(), x => UndoRedo.UndoList.Any());
-            RedoCommand = new RelayCommand<object>(x => UndoRedo.Redo(), x => UndoRedo.UndoList.Any());
+            RedoCommand = new RelayCommand<object>(x => UndoRedo.Redo(), x => UndoRedo.RedoList.Any());
             SaveCommand = new RelayCommand<object>(x => Save(this));
             DebugStartCommand = new RelayCommand<object>(async x => await RunGame(true), x => !VisualStudio.IsDebugging() && VisualStudio.BuildDone);
             DebugStartWithoutDebuggingCommand = new RelayCommand<object>(async x => await RunGame(false), x => !VisualStudio.IsDebugging() && VisualStudio.BuildDone) ;
