@@ -2,7 +2,7 @@
 
 #include "CommonHeaders.h"
 
-namespace primal::platform 
+namespace primal::platform
 {
 	DEFINE_TYPED_ID(window_id);
 	class window
@@ -12,6 +12,17 @@ namespace primal::platform
 		constexpr window() : _id{ id::invalid_id } {}
 		constexpr window_id get_id() const { return _id; }
 		constexpr bool is_valid() const { return id::is_valid(_id); }
+
+		void set_fullscreen(bool is_fullscreen) const;
+		bool is_fullscreen() const;
+		void* handle() const;
+		void set_caption(const wchar_t* caption) const;
+		const math::u32v4 size() const;
+		void resize(u32 width, u32 height) const;
+		const u32 width() const;
+		const u32 height() const;
+		bool is_close() const;
+
 
 	private:
 		window_id _id;
