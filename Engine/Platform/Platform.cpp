@@ -65,9 +65,37 @@ namespace primal::platform
 			window_info* info{ nullptr };
 			switch (msg)
 			{
+			//창이 제거된 경우
 			case WM_DESTROY:
 				get_from_handle(hwnd).is_closed = true;
 				break;
+			//이동 또는 크기조정을 종료한 후 발생
+			case WM_EXITSIZEMOVE:
+				info = &get_from_handle(hwnd);
+				break;
+			//크기가 변경된 경우
+			case WM_SIZE:
+				if (wparam == SIZE_MAXIMIZED)
+				{
+					info = &get_from_handle(hwnd);
+				}
+				break;
+			//최대화, 최소화, 복원, 닫기
+			case WM_SYSCOMMAND:
+				if (wparam == SC_RESTORE)
+				{
+					info = &get_from_handle(hwnd);
+				}
+				break;
+			default:
+				break;
+			}
+		
+
+			if (info)
+			{
+				assert(info->hwnd);
+				GetClientRect(info->hwnd, info->is_fullscreen ? &info->fullscreen_area : &info->client_area);
 			}
 
 			LONG_PTR long_ptr{ GetWindowLongPtr(hwnd,0) };
@@ -292,7 +320,7 @@ namespace primal::platform
 		return s.w - s.y;
 		// same as width()
 	}
-	bool window::is_close() const
+	bool window::is_closed() const
 	{
 		assert(is_valid());
 		return is_window_closed(_id);

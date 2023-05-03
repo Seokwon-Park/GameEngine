@@ -21,7 +21,7 @@ namespace primal::platform
 		void resize(u32 width, u32 height) const;
 		const u32 width() const;
 		const u32 height() const;
-		bool is_close() const;
+		bool is_closed() const;
 
 
 	private:
