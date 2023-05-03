@@ -144,13 +144,11 @@ namespace primal::platform
 					GetWindowRect(info.hwnd, &rect);
 					info.top_left.x = rect.left;
 					info.top_left.y = rect.top;
-					info.style = 0;
-					SetWindowLongPtr(info.hwnd, GWL_STYLE, info.style);
+					SetWindowLongPtr(info.hwnd, GWL_STYLE, 0);
 					ShowWindow(info.hwnd, SW_MAXIMIZE);
 				}
 				else
 				{
-					info.style = WS_VISIBLE | WS_OVERLAPPEDWINDOW;
 					SetWindowLongPtr(info.hwnd, GWL_STYLE, info.style);
 					resize_window(info, info.client_area);
 					ShowWindow(info.hwnd, SW_SHOWNORMAL);
@@ -214,6 +212,8 @@ namespace primal::platform
 		window_info info{};
 		info.client_area.right = (init_info && init_info->width) ? info.client_area.left + init_info->width : info.client_area.right;
 		info.client_area.bottom = (init_info && init_info->height) ? info.client_area.top + init_info->height : info.client_area.bottom;
+		info.style |= parent ? WS_CHILD : WS_OVERLAPPEDWINDOW;
+
 
 		// 제목 표시줄(타이틀 바 ,가장자리 영역을 제외한 올바른 클라이언트 영역 재정의
 		RECT rect{ info.client_area };
@@ -226,9 +226,7 @@ namespace primal::platform
 		const s32 width{ rect.right - rect.left };
 		const s32 height{ rect.bottom - rect.top };
 
-		info.style |= parent ? WS_CHILD : WS_OVERLAPPEDWINDOW;
-
-		// Create an instance of window class
+				// Create an instance of window class
 		info.hwnd = CreateWindowEx(
 			0,					// extended style
 			wc.lpszClassName,	// window class name
