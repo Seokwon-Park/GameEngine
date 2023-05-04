@@ -2,18 +2,18 @@
 #include "ToolsCommon.h"
 
 namespace primal::tools {
-
 	struct mesh
 	{
-		utl::vector<math::Vector3> positions;
-		utl::vector<math::Vector3> normals;
-		utl::vector<math::Vector3> tangents;
-		utl::vector<utl::vector<math::Vector2>> uv_sets;
+		utl::vector<Vector3> positions;
+		utl::vector<Vector3> normals;
+		utl::vector<Vector3> tangents;
+		utl::vector<utl::vector<Vector2>> uv_sets;
 
 		utl::vector<u32> raw_indices;
 
 		// Intermediate data
-
+		utl::vector<Vertex> vertices;
+		utl::vector<u32> indices;
 		// Output data
 	};
 
@@ -45,4 +45,7 @@ namespace primal::tools {
 		u32 buffer_size;
 		geometry_import_settings settings;
 	};
+
+	void process_scene(scene& scene, const geometry_import_settings& setting);
+	void pack_data(const scene& scene, scene_data& data);
 }

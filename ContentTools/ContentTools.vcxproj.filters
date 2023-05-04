@@ -4,8 +4,10 @@
     <ClInclude Include="ToolsCommon.h" />
     <ClInclude Include="PrimitiveMesh.h" />
     <ClInclude Include="Geometry.h" />
+    <ClInclude Include="Vertex.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="PrimitiveMesh.cpp" />
+    <ClCompile Include="Geometry.cpp" />
   </ItemGroup>
 </Project>

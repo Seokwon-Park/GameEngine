@@ -14,8 +14,10 @@
     <ClInclude Include="Geometry.h" />
     <ClInclude Include="PrimitiveMesh.h" />
     <ClInclude Include="ToolsCommon.h" />
+    <ClInclude Include="Vertex.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Geometry.cpp" />
     <ClCompile Include="PrimitiveMesh.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
