@@ -7,7 +7,7 @@ namespace primal::tools {
 	{
 		struct vertex_static
 		{
-			math::Vector3 position;
+			Vector3 position;
 			u8 reserved[3];
 			u8 t_sign; // bit 0; tangent handedness * (tangent.z sign), bit 1: normal.z sign (0 means -1, 1 means +1)
 			u16 normal[2];
