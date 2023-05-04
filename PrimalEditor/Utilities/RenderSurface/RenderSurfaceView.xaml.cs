@@ -1,4 +1,4 @@
-﻿using PrimalEditor.Components;
+﻿using PrimalEditor;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
