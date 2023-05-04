@@ -11,11 +11,11 @@ namespace primal::tools {
 			const u32 num_indices{ (u32)m.raw_indices.size() };
 			m.normals.reserve(num_indices);
 
-			for (u32 i{ 0 }; i < num_indices; i+=3)
+			for (u32 i{ 0 }; i < num_indices; i += 3)
 			{
 				const u32 i0{ m.raw_indices[i] };
-				const u32 i1{ m.raw_indices[i+1] };
-				const u32 i2{ m.raw_indices[i+2] };
+				const u32 i1{ m.raw_indices[i + 1] };
+				const u32 i2{ m.raw_indices[i + 2] };
 
 				XMVECTOR v0{ XMLoadFloat3(&m.positions[i0]) };
 				XMVECTOR v1{ XMLoadFloat3(&m.positions[i1]) };
@@ -27,7 +27,7 @@ namespace primal::tools {
 
 				XMStoreFloat3(&m.normals[i], n);
 				m.normals[i + 1] = m.normals[i];
-				m.normals[i + 2] = m.normals[i];				
+				m.normals[i + 2] = m.normals[i];
 			}
 		}
 
@@ -70,7 +70,7 @@ namespace primal::tools {
 								//		 cos(angle) = dot(n1, n2) / (||n1||*||n2||)
 								XMStoreFloat(&n, XMVector3Dot(n1, n2) * XMVector3ReciprocalLength(n1));
 							}
-							
+
 							if (is_soft_edge || n >= cos_angle)
 							{
 								n1 += n2;
@@ -87,6 +87,74 @@ namespace primal::tools {
 			}
 
 
+		}
+
+		void process_uvs(mesh& m)
+		{
+			utl::vector<Vertex> old_vertices;
+			old_vertices.swap(m.vertices);
+			utl::vector<u32> old_indices(m.indices.size());
+			old_indices.swap(m.indices);
+
+			const u32 num_vertices{ (u32)old_vertices.size() };
+			const u32 num_indices{ (u32)old_indices.size() };
+			assert(num_vertices && num_indices);
+
+			utl::vector<utl::vector<u32>> idx_ref(num_vertices);
+			for (u32 i{ 0 }; i < num_indices; ++i)
+			{
+				idx_ref[old_indices[i]].emplace_back(i);
+			}
+
+			for (u32 i{ 0 }; i < num_indices; ++i)
+			{
+				auto& refs{ idx_ref[i] };
+				u32 num_refs{ (u32)refs.size() };
+				for (u32 j{ 0 }; j < num_refs; ++j)
+				{
+					m.indices[refs[j]] - (u32)m.vertices.size();
+					Vertex& v{ old_vertices[old_indices[refs[j]]] };
+					v.uv = m.uv_sets[0][refs[j]];
+					m.vertices.emplace_back(v);
+
+					for (u32 k{ j + 1 }; k < num_refs; ++k)
+					{
+						Vector2& uv1{ m.uv_sets[0][refs[k]] };
+						if (XMScalarNearEqual(v.uv.x, uv1.x, epsilon) &&
+							XMScalarNearEqual(v.uv.y, uv1.y, epsilon))
+						{
+							m.indices[refs[k]] = m.indices[refs[j]];
+							refs.erase(refs.begin() + k);
+							--num_refs;
+							--k;
+						}
+					}
+				}
+			}
+		}
+
+		void pack_vertices_static(mesh& m)
+		{
+			const u32 num_vertices{ (u32)m.vertices.size() };
+			assert(num_vertices);
+			m.packed_vertices_static.reserve(num_vertices);
+
+			for (u32 i{ 0 }; i < num_vertices; ++i)
+			{
+				Vertex& v{ m.vertices[i] };
+				const u8 signs{ (u8)((v.normal.z > 0.f) << 1) };
+				const u8 normal_x{ (u16)pack_float<16>(v.normal.x, -1.f, 1.f) };
+				const u8 normal_y{ (u16)pack_float<16>(v.normal.y, -1.f, 1.f) };
+				// TODO: pack tangents in sign and in x/y components
+
+				m.packed_vertices_static
+					.emplace_back(packed_vertex::vertex_static
+						{
+							v.position, {0,0,0}, signs,
+							{normal_x, normal_y}, {},
+							v.uv
+						});
+			}
 		}
 
 		void process_vertices(mesh& m, const geometry_import_settings& settings)
@@ -110,10 +178,10 @@ namespace primal::tools {
 
 	void process_scene(scene& scene, const geometry_import_settings& settings)
 	{
-		for(auto& lod:scene.lod_groups)
+		for (auto& lod : scene.lod_groups)
 			for (auto& m : lod.meshes)
 			{
-				process_vertices(m,settings);
+				process_vertices(m, settings);
 			}
 	}
 

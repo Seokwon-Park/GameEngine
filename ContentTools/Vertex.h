@@ -4,9 +4,9 @@
 namespace primal::tools{
 	struct Vertex
 	{
-		Vector4 tangent{};
-		Vector3 position{};
-		Vector3 normal{};
-		Vector2 uv{};
+		math::Vector4 tangent{};
+		math::Vector3 position{};
+		math::Vector3 normal{};
+		math::Vector2 uv{};
 	};
 }
