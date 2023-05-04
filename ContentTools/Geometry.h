@@ -7,21 +7,21 @@ namespace primal::tools {
 	{
 		struct vertex_static
 		{
-			Vector3 position;
+			math::Vector3 position;
 			u8 reserved[3];
 			u8 t_sign; // bit 0; tangent handedness * (tangent.z sign), bit 1: normal.z sign (0 means -1, 1 means +1)
 			u16 normal[2];
 			u16 tangent[2];
-			Vector2 uv;
+			math::Vector2 uv;
 				
 		};
 	}// namespace packed_vertex
 	struct mesh
 	{
-		utl::vector<Vector3> positions;
-		utl::vector<Vector3> normals;
-		utl::vector<Vector3> tangents;
-		utl::vector<utl::vector<Vector2>> uv_sets;
+		utl::vector<math::Vector3> positions;
+		utl::vector<math::Vector3> normals;
+		utl::vector<math::Vector3> tangents;
+		utl::vector<utl::vector<math::Vector2>> uv_sets;
 
 		utl::vector<u32> raw_indices;
 
