@@ -8,26 +8,27 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using System.Windows.Interop;
+using System.Xml.Schema;
 
 namespace PrimalEditor.Utilities
 {
     class RenderSurfaceHost : HwndHost
     {
+        private readonly int VK_LBUTTON = 0x01;
         private readonly int _width = 800;
         private readonly int _height = 600;
         private IntPtr _renderWindowHandle = IntPtr.Zero;
         private DelayEventTimer _resizeTimer;
 
+        [DllImport("user32.dll")]
+        private static extern short GetAsyncKeyState(int vKey);
+
         public int SurfaceId { get; private set; } = ID.INVALID_ID;
 
-        public void Resize()
-        {
-            _resizeTimer.Trigger();
-        }
         public void Resize(object sender, DelayEventTimerArgs e)
         {
-            e.RepeatEvent = Mouse.LeftButton == MouseButtonState.Pressed;
-            if(!e.RepeatEvent)
+            e.RepeatEvent = GetAsyncKeyState(VK_LBUTTON) < 0;
+            if (!e.RepeatEvent)
             {
                 EngineAPI.ResizeRenderSurface(SurfaceId);
             }
@@ -39,6 +40,7 @@ namespace PrimalEditor.Utilities
             _height = (int)height;
             _resizeTimer = new DelayEventTimer(TimeSpan.FromMilliseconds(250.0));
             _resizeTimer.Triggered += Resize;
+            SizeChanged += (s, e) => _resizeTimer.Trigger();
         }
         protected override HandleRef BuildWindowCore(HandleRef hwndParent)
         {

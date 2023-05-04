@@ -7,7 +7,7 @@ using System.Windows;
 
 namespace PrimalEditor.Utilities.Controls
 {
-    class ScalarBox :NumberBox
+    class ScalarBox : NumberBox
     {
         static ScalarBox()
         {

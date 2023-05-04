@@ -19,6 +19,7 @@ namespace PrimalEditor.Utilities.Controls
         private bool _captured = false;
         private bool _valueChanged = false;
 
+        public static readonly
         public double Multiplier
         {
             get => (double)GetValue(MultiplierProperty);
