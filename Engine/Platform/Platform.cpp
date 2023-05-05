@@ -65,9 +65,37 @@ namespace primal::platform
 			window_info* info{ nullptr };
 			switch (msg)
 			{
+				//창이 제거된 경우
 			case WM_DESTROY:
 				get_from_handle(hwnd).is_closed = true;
 				break;
+				//이동 또는 크기조정을 종료한 후 발생
+			case WM_EXITSIZEMOVE:
+				info = &get_from_handle(hwnd);
+				break;
+				//크기가 변경된 경우
+			case WM_SIZE:
+				if (wparam == SIZE_MAXIMIZED)
+				{
+					info = &get_from_handle(hwnd);
+				}
+				break;
+				//최대화, 최소화, 복원, 닫기
+			case WM_SYSCOMMAND:
+				if (wparam == SC_RESTORE)
+				{
+					info = &get_from_handle(hwnd);
+				}
+				break;
+			default:
+				break;
+			}
+
+
+			if (info)
+			{
+				assert(info->hwnd);
+				GetClientRect(info->hwnd, info->is_fullscreen ? &info->fullscreen_area : &info->client_area);
 			}
 
 			LONG_PTR long_ptr{ GetWindowLongPtr(hwnd,0) };
@@ -91,6 +119,12 @@ namespace primal::platform
 		void resize_window(window_id id, u32 width, u32 height)
 		{
 			window_info& info{ get_from_id(id) };
+
+			// NOTE : when we host the window in the level editor we just update the internal data (i.e. the client area dimensions).
+			if (info.style & WS_CHILD)
+			{
+				GetClientRect(info.hwnd, &info.client_area);
+			}
 
 			// NOTE: we also resize while in fullscreen mode to support the case
 			//		 when the user changes the screen resolution.
@@ -116,13 +150,11 @@ namespace primal::platform
 					GetWindowRect(info.hwnd, &rect);
 					info.top_left.x = rect.left;
 					info.top_left.y = rect.top;
-					info.style = 0;
-					SetWindowLongPtr(info.hwnd, GWL_STYLE, info.style);
+					SetWindowLongPtr(info.hwnd, GWL_STYLE, 0);
 					ShowWindow(info.hwnd, SW_MAXIMIZE);
 				}
 				else
 				{
-					info.style = WS_VISIBLE | WS_OVERLAPPEDWINDOW;
 					SetWindowLongPtr(info.hwnd, GWL_STYLE, info.style);
 					resize_window(info, info.client_area);
 					ShowWindow(info.hwnd, SW_SHOWNORMAL);
@@ -184,21 +216,23 @@ namespace primal::platform
 		RegisterClassEx(&wc);
 
 		window_info info{};
-
-		// 제목 표시줄(타이틀 바 ,가장자리 영역을 제외한 올바른 클라이언트 영역 재정의
-		RECT rc{ info.client_area };
-
-		AdjustWindowRect(&rc, info.style, FALSE);
-
-		const wchar_t* caption{ (init_info && init_info->caption) ? init_info->caption : L"Game" };
-		const s32 left{ (init_info && init_info->left) ? init_info->left : info.client_area.left };
-		const s32 top{ (init_info && init_info->top) ? init_info->top : info.client_area.top };
-		const s32 width{ (init_info && init_info->width) ? init_info->width : rc.right - rc.left };
-		const s32 height{ (init_info && init_info->height) ? init_info->height : rc.bottom - rc.top };
-
+		info.client_area.right = (init_info && init_info->width) ? info.client_area.left + init_info->width : info.client_area.right;
+		info.client_area.bottom = (init_info && init_info->height) ? info.client_area.top + init_info->height : info.client_area.bottom;
 		info.style |= parent ? WS_CHILD : WS_OVERLAPPEDWINDOW;
 
-		// Create an instance of window class
+
+		// 제목 표시줄(타이틀 바 ,가장자리 영역을 제외한 올바른 클라이언트 영역 재정의
+		RECT rect{ info.client_area };
+
+		AdjustWindowRect(&rect, info.style, FALSE);
+
+		const wchar_t* caption{ (init_info && init_info->caption) ? init_info->caption : L"Game" };
+		const s32 left{ init_info ? init_info->left : info.top_left.x};
+		const s32 top{ init_info ? init_info->top : info.top_left.y };
+		const s32 width{ rect.right - rect.left };
+		const s32 height{ rect.bottom - rect.top };
+
+				// Create an instance of window class
 		info.hwnd = CreateWindowEx(
 			0,					// extended style
 			wc.lpszClassName,	// window class name
@@ -214,7 +248,7 @@ namespace primal::platform
 
 		if (info.hwnd)
 		{
-			SetLastError(0);
+			DEBUG_OP(SetLastError(0));
 			const window_id id{ add_to_windows(info) };
 			SetWindowLongPtr(info.hwnd, GWLP_USERDATA, (LONG_PTR)id);
 			// Set in the "extra" bytes the pointer to the window callback function
@@ -235,12 +269,12 @@ namespace primal::platform
 		DestroyWindow(info.hwnd);
 		remove_from_windows(id);
 	}
-#elif
+#else
 #error "must implement at least one platform"
 #endif //_WIN64
 
 	//이렇게 window handle을 다루는 function들을 anonymous namespace에 구현하여 function call로 구현하는 이점
-    //platform independent -> 모든 운영체제에서 동일한 기능 올바른 동작
+	//platform independent -> 모든 운영체제에서 동일한 기능 올바른 동작
 	void window::set_fullscreen(bool is_fullscreen) const
 	{
 		assert(is_valid());
@@ -265,7 +299,7 @@ namespace primal::platform
 		set_window_caption(_id, caption);
 	}
 
-	const math::u32v4 window::size() const
+	math::u32v4 window::size() const
 	{
 		assert(is_valid());
 		return get_window_size(_id);
@@ -273,26 +307,26 @@ namespace primal::platform
 	void window::resize(u32 width, u32 height) const
 	{
 		assert(is_valid());
-		resize_window(_id,  width, height);
+		resize_window(_id, width, height);
 
 	}
-	const u32 window::width() const
+	u32 window::width() const
 	{
 		// call window size func
 		math::u32v4 s{ size() };
 		// return { area.left, area.top, area.right, area.bottom } as { x, y, z, w }
 		// right - left
-		return s.z - s.x; 
+		return s.z - s.x;
 
 
 	}
-	const u32 window::height() const
+	u32 window::height() const
 	{
 		math::u32v4 s{ size() };
 		return s.w - s.y;
 		// same as width()
 	}
-	bool window::is_close() const
+	bool window::is_closed() const
 	{
 		assert(is_valid());
 		return is_window_closed(_id);

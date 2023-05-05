@@ -220,6 +220,7 @@ namespace PrimalEditor.GameProject
             {
                 UnloadGameCodeDll();
                 await Task.Run(() => VisualStudio.BuildSolution(this, GetConfigurationName(DllBuildConfig), showWindow));
+                await Task.Run(() => VisualStudio.BuildSolution(this, GetConfigurationName(StandAloneBuildConfig), showWindow));
                 if (VisualStudio.BuildSucceeded)
                 {
                     LoadGameCodeDll();
