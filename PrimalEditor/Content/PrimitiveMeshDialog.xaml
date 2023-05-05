@@ -63,9 +63,9 @@
                             </DockPanel>
                             <DockPanel Margin="5">
                                 <TextBlock Text="Length" Width="40" DockPanel.Dock="Left" VerticalAlignment="Center"/>
-                                <TextBox Text="{Binding Path=Value, ElementName=ySliderPlane}" Width="30" DockPanel.Dock="Right"/>
+                                <TextBox Text="{Binding Path=Value, ElementName=zSliderPlane}" Width="30" DockPanel.Dock="Right"/>
                                 <Slider Minimum="1" Maximum="10" HorizontalAlignment="Stretch" Interval="1" IsSnapToTickEnabled="True"
-                                        TickPlacement ="BottomRight" x:Name="ySliderPlane" ValueChanged="OnSlider_ValueChanged"/>
+                                        TickPlacement ="BottomRight" x:Name="zSliderPlane" ValueChanged="OnSlider_ValueChanged"/>
                             </DockPanel>
                         </StackPanel>                          
                     </Border>
@@ -77,11 +77,11 @@
                         <StackPanel Margin="5,15,5,5">
                             <DockPanel Margin="5,5,5,0">
                                 <TextBlock Text="Width" Width="40" DockPanel.Dock="Left" VerticalAlignment="Center"/>
-                                <utl:ScalarBox x:Name="widthScalarBoxPlane" Value="1"/>
+                                <utl:ScalarBox x:Name="widthScalarBoxPlane" Value="1" ValueChanged="OnScalarBox_ValueChanged"/>
                             </DockPanel>
                             <DockPanel Margin="5,5,5,0">
                                 <TextBlock Text="Length" Width="40" DockPanel.Dock="Left" VerticalAlignment="Center"/>
-                                <utl:ScalarBox x:Name="lengthScalarBoxPlane" Value="1"/>
+                                <utl:ScalarBox x:Name="lengthScalarBoxPlane" Value="1" ValueChanged="OnScalarBox_ValueChanged"/>
                             </DockPanel>
                         </StackPanel>
                     </Border>

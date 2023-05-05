@@ -28,6 +28,7 @@ namespace PrimalEditor.Utilities.Controls
         public static readonly RoutedEvent ValueChangedEvent =
             EventManager.RegisterRoutedEvent(nameof(ValueChanged), RoutingStrategy.Bubble,
                 typeof(RoutedEventHandler), typeof(NumberBox));
+
         public double Multiplier
         {
             get => (double)GetValue(MultiplierProperty);
@@ -51,7 +52,7 @@ namespace PrimalEditor.Utilities.Controls
 
         private static void OnValueChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
-            
+            (d as NumberBox).RaiseEvent(new RoutedEventArgs(ValueChangedEvent));
         }
 
         public override void OnApplyTemplate()

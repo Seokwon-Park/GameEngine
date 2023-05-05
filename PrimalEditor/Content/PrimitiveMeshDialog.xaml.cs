@@ -11,6 +11,9 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
+using PrimalEditor.ContentToolsAPIStructs;
+using PrimalEditor.DllWrappers;
+using PrimalEditor.Utilities.Controls;
 
 namespace PrimalEditor.Content
 {
@@ -19,19 +22,55 @@ namespace PrimalEditor.Content
     /// </summary>
     public partial class PrimitiveMeshDialog : Window
     {
+        private void OnPrimitiveType_ComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e) => UpdatePrimitive();
+
+        private void OnSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e) => UpdatePrimitive();
+
+        private void OnScalarBox_ValueChanged(object sender, RoutedEventArgs e) => UpdatePrimitive();
+
+        private float Value(ScalarBox scalarBox, float min)
+        {
+            float.TryParse(scalarBox.Value, out var result);
+            return Math.Max(result,min);
+        }
+        private void UpdatePrimitive()
+        {
+            if (!IsInitialized) return;
+
+            var primitiveType = (PrimitiveMeshType)primTypeComboBox.SelectedItem;
+            var info = new PrimitiveInitInfo() { Type = primitiveType };
+
+            switch (primitiveType)
+            {
+                case PrimitiveMeshType.Plane:
+                    {
+                        info.SegmentX = (int)xSliderPlane.Value;
+                        info.SegmentY = (int)zSliderPlane.Value;
+                        info.Size.X = Value(widthScalarBoxPlane, 0.001f);
+                        info.Size.Z = Value(lengthScalarBoxPlane, 0.001f);
+                    break;
+                    }
+                case PrimitiveMeshType.Cube:
+                    break;
+                case PrimitiveMeshType.UvSphere:
+                    break;
+                case PrimitiveMeshType.IcoSphere:
+                    break;
+                case PrimitiveMeshType.Cylinder:
+                    break;
+                case PrimitiveMeshType.Capsule:
+                    break;
+                default:
+                    break;
+            }
+            var geometry = new Geometry();
+            ContentToolsAPI.CreatePrimitiveMesh(geometry, info);
+        }
+
         public PrimitiveMeshDialog()
         {
             InitializeComponent();
-        }
-
-        private void OnPrimitiveType_ComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-
-        }
-
-        private void OnSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
-        {
-
+            Loaded += (s, e) => UpdatePrimitive();
         }
     }
 }
