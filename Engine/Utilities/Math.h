@@ -42,6 +42,6 @@ namespace primal::math
 	constexpr f32 unpack_float(u32 i, f32 min, f32 max)
 	{
 		assert(min < max);
-		return unpack_to_unit_float<bits>(i) * (max - min) + min;;
+		return unpack_to_unit_float<bits>(i) * (max - min) + min;
 	}
 }

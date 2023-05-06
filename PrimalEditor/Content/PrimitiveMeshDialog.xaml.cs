@@ -13,6 +13,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
 using PrimalEditor.ContentToolsAPIStructs;
 using PrimalEditor.DllWrappers;
+using PrimalEditor.Editors;
 using PrimalEditor.Utilities.Controls;
 
 namespace PrimalEditor.Content
@@ -65,6 +66,7 @@ namespace PrimalEditor.Content
             }
             var geometry = new Geometry();
             ContentToolsAPI.CreatePrimitiveMesh(geometry, info);
+            (DataContext as GeometryEditor).SetAsset(geometry);
         }
 
         public PrimitiveMeshDialog()
