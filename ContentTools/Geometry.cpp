@@ -9,25 +9,25 @@ namespace primal::tools {
 		void recalculate_normals(mesh& m)
 		{
 			const u32 num_indices{ (u32)m.raw_indices.size() };
-			m.normals.reserve(num_indices);
+			m.normals.resize(num_indices);
 
-			for (u32 i{ 0 }; i < num_indices; i += 3)
+			for (u32 i{ 0 }; i < num_indices; ++i)
 			{
 				const u32 i0{ m.raw_indices[i] };
-				const u32 i1{ m.raw_indices[i + 1] };
-				const u32 i2{ m.raw_indices[i + 2] };
+				const u32 i1{ m.raw_indices[++i] };
+				const u32 i2{ m.raw_indices[++i] };
 
 				XMVECTOR v0{ XMLoadFloat3(&m.positions[i0]) };
 				XMVECTOR v1{ XMLoadFloat3(&m.positions[i1]) };
 				XMVECTOR v2{ XMLoadFloat3(&m.positions[i2]) };
 
 				XMVECTOR e0{ v1 - v0 };
-				XMVECTOR e1{ v2 - v1 };
+				XMVECTOR e1{ v2 - v0 };
 				XMVECTOR n{ XMVector3Normalize(XMVector3Cross(e0,e1)) };
 
-				XMStoreFloat3(&m.normals[i], n);
-				m.normals[i + 1] = m.normals[i];
-				m.normals[i + 2] = m.normals[i];
+				XMStoreFloat3(&m.normals[i] , n);
+				m.normals[i - 1] = m.normals[i];
+				m.normals[i - 2] = m.normals[i];
 			}
 		}
 
@@ -106,7 +106,7 @@ namespace primal::tools {
 				idx_ref[old_indices[i]].emplace_back(i);
 			}
 
-			for (u32 i{ 0 }; i < num_indices; ++i)
+			for (u32 i{ 0 }; i < num_vertices; ++i)
 			{
 				auto& refs{ idx_ref[i] };
 				u32 num_refs{ (u32)refs.size() };
@@ -122,7 +122,7 @@ namespace primal::tools {
 						Vector2& uv1{ m.uv_sets[0][refs[k]] };
 						if (XMScalarNearEqual(v.uv.x, uv1.x, epsilon) &&
 							XMScalarNearEqual(v.uv.y, uv1.y, epsilon))
-						{
+						{ 
 							m.indices[refs[k]] = m.indices[refs[j]];
 							refs.erase(refs.begin() + k);
 							--num_refs;

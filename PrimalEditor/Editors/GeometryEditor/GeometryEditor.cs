@@ -84,12 +84,14 @@ namespace PrimalEditor.Editors
                 if (_cameraPosition!= value)
                 {
                     _cameraPosition= value;
+                    CameraDirection = new Vector3D(-value.X, -value.Y, -value.Z);
+                    OnPropertyChanged(nameof(OffsetCameraPosition));
                     OnPropertyChanged(nameof(CameraPosition));
                 }
             }
         }
 
-        private Point3D _cameraTarget;
+        private Point3D _cameraTarget = new Point3D(0, 0, 0);
         public Point3D CameraTarget
         {
             get => _cameraTarget;
@@ -107,7 +109,7 @@ namespace PrimalEditor.Editors
         public Point3D OffsetCameraPosition =>
             new Point3D(CameraPosition.X + CameraTarget.X, CameraPosition.Y + CameraTarget.Y, CameraPosition.Z + CameraTarget.Z);
 
-        private Color _keyLight = (Color)ColorConverter.ConvertFromString("#ffaeaeae");
+        private Color _keyLight = (Color)ColorConverter.ConvertFromString("#ffffffff");
         public Color KeyLight
         {
             get => _keyLight;

@@ -124,8 +124,8 @@ namespace PrimalEditor.Content
                 }
             }
         }
-        public ObservableCollection<Mesh> Meshes { get; } = new ObservableCollection<Mesh>();
 
+        public ObservableCollection<Mesh> Meshes { get; } = new ObservableCollection<Mesh>();
     }
 
     class LODGroup : ViewModelBase
@@ -252,6 +252,7 @@ namespace PrimalEditor.Content
                 lod = new MeshLOD() { Name = meshName, LodThreshold = lodThreshold };
                 lodList.Add(lod);
             }
+            lod.Meshes.Add(mesh);
         }
 
         public Geometry() : base(AssetType.Mesh)

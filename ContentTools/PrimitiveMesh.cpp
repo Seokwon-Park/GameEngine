@@ -62,7 +62,7 @@ namespace primal::tools {
 					Vector3 position{ offset };
 					f32* const as_array{ &position.x };
 					as_array[horizontal_index] += i * horizontal_step;
-					as_array[vertical_index] += i * vertical_step;
+					as_array[vertical_index] += j * vertical_step;
 					m.positions.emplace_back(position.x * info.size.x, position.y * info.size.y, position.z * info.size.z);
 
 					Vector2 uv{ u_range.x, 1.f - v_range.x };
@@ -71,7 +71,7 @@ namespace primal::tools {
 					uvs.emplace_back(uv);
 				}
 			}
-			assert(m.positions.size() == (((u64)horizontal_count + 1) & ((u64)vertical_count + 1)));
+			assert(m.positions.size() == (((u64)horizontal_count + 1) * ((u64)vertical_count + 1)));
 
 			const u32 row_length{ horizontal_count + 1 };
 			for (u32 j{ 0 }; j < vertical_count; ++j)
@@ -143,11 +143,12 @@ namespace primal::tools {
 	}//anonymous namespace
 
 	EDITOR_INTERFACE
-		void CreatePrimitiveMesh(scene_data* data, primitive_init_info* info)
+	void CreatePrimitiveMesh(scene_data* data, primitive_init_info* info)
 	{
 		assert(data && info);
 		assert(info->type < primitive_mesh_type::count);
 		scene scene{};
+		if (info->type < primitive_mesh_type::plane || info->type > primitive_mesh_type::capsule) return;
 		creators[info->type](scene, *info);
 
 		data->settings.calculate_normals = 1;
