@@ -48,4 +48,8 @@
     </COMReference>
   </ItemGroup>
 
+  <ItemGroup>
+    <Resource Include="Resources\PrimitiveMeshView\Screenshot.png" />
+  </ItemGroup>
+
 </Project>
