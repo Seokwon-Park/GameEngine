@@ -1,5 +1,6 @@
 #include "Renderer.h"
 #include "GraphicsPlatformInterface.h"
+#include "Direct3D12/D3D12Interface.h"
 
 namespace primal::graphics
 {
@@ -11,15 +12,17 @@ namespace primal::graphics
 		{
 			switch (platform)
 			{
-			case primal::graphics::graphics_platform::direct3d11:
-				d3d11::get_platform_interface(gfx);
-				break;
-			case primal::graphics::graphics_platform::direct3d12:
+			case graphics_platform::direct3d12:
 				d3d12::get_platform_interface(gfx);
 				break;
+				/*
+			case graphics_platform::direct3d12:
+
+				break;*/
 			default:
-				break;
+				return false;
 			}
+			return true;
 		}
 	}// anonymous namespace
 

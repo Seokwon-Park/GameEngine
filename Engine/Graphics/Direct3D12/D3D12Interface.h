@@ -1,4 +1,5 @@
 #pragma once
+
 namespace primal::graphics
 {
 	struct platform_interface;

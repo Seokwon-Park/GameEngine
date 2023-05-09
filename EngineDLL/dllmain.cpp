@@ -16,6 +16,7 @@ BOOL APIENTRY DllMain( HMODULE hModule,
 #if _DEBUG
         //메모리 누수 감지
         _CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
+        break;
 #endif
     case DLL_THREAD_ATTACH:
     case DLL_THREAD_DETACH:

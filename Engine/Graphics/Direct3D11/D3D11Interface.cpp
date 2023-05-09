@@ -1,5 +1,6 @@
 #include "CommonHeaders.h"
 #include "D3D11Interface.h"
+#include "D3D11Core.h"
 #include "Graphics\GraphicsPlatformInterface.h"
 
 namespace primal::graphics::d3d11

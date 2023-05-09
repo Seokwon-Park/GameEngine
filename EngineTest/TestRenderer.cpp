@@ -1,7 +1,9 @@
 #include "..\Platform\PlatformTypes.h"
 #include "..\Platform\Platform.h"
 #include "..\Graphics\Renderer.h"
+#include "..\Graphics\Direct3D12\D3D12Core.h"
 #include "TestRenderer.h"
+
 
 using namespace primal;
 
@@ -27,6 +29,7 @@ LRESULT win_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 			PostQuitMessage(0);
 			return 0;
 		}
+		break;
 	}
 	//사용자가 alt를 누른상태에서 문자키를 눌렀을때
 	case WM_SYSCHAR:
@@ -53,7 +56,7 @@ void destroy_render_surface(graphics::render_surface& surface)
 
 bool engine_test::initialize()
 {
-	bool result{ graphics::initialize(graphics::graphics_platform::direct3d11) };
+	bool result{ graphics::initialize(graphics::graphics_platform::direct3d12) };
 	if (!result) return result;
 
 	platform::window_init_info info[]
@@ -67,6 +70,7 @@ bool engine_test::initialize()
 
 	for (u32 i{ 0 }; i < _countof(_surfaces); ++i)
 		create_render_surface(_surfaces[i], info[i]);
+
 	return true;
 }
 
