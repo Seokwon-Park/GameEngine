@@ -42,6 +42,7 @@ namespace PrimalEditor.Content
 
             var primitiveType = (PrimitiveMeshType)primTypeComboBox.SelectedItem;
             var info = new PrimitiveInitInfo() { Type = primitiveType };
+            var smoothingAngle = 0;
 
             switch (primitiveType)
             {
@@ -62,6 +63,7 @@ namespace PrimalEditor.Content
                         info.Size.X = Value(xScalarBoxUvSphere, 0.001f);
                         info.Size.Y = Value(yScalarBoxUvSphere, 0.001f);
                         info.Size.Z = Value(zScalarBoxUvSphere, 0.001f);
+                        smoothingAngle = (int)angleSliderUvSphere.Value;
                     }
                     break;
                 case PrimitiveMeshType.IcoSphere:
@@ -74,6 +76,7 @@ namespace PrimalEditor.Content
                     break;
             }
             var geometry = new Geometry();
+            geometry.ImportSettings.SmoothingAngle= smoothingAngle;
             ContentToolsAPI.CreatePrimitiveMesh(geometry, info);
             (DataContext as GeometryEditor).SetAsset(geometry);
             OnTexture_CheckBox_Click(textureCheckBox, null);
@@ -83,9 +86,9 @@ namespace PrimalEditor.Content
         {
             var uris = new List<Uri>
             {
-                new Uri("pack://application:,,,/Resources/PrimitiveMeshView/Screenshot.png"), // for plane
+                new Uri("pack://application:,,,/Resources/PrimitiveMeshView/Checkmap.png"), // for plane
                 new Uri("pack://application:,,,/Resources/PrimitiveMeshView/Screenshot.png"), // for cube
-                new Uri("pack://application:,,,/Resources/PrimitiveMeshView/Screenshot.png"), // for uvsph
+                new Uri("pack://application:,,,/Resources/PrimitiveMeshView/Earth.jpg"), // for uvsph
             };
 
             _textures.Clear();
