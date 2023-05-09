@@ -131,6 +131,7 @@ namespace PrimalEditor.Editors
             if (!_capturedLeft) Mouse.Capture(null);
         }
 
+        //reference https://en.wikipedia.org/wiki/Spherical_coordinate_system
         private void MoveCamera(double dx, double dy, int dz)
         {
             var vm = DataContext as MeshRenderer;

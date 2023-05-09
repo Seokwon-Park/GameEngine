@@ -5,6 +5,7 @@ namespace primal::math
 {
 	using namespace DirectX::SimpleMath;
 	constexpr float pi = DirectX::XM_PI;
+	constexpr float two_pi = DirectX::XM_2PI;	
 	constexpr float epsilon = 1e-5f;
 #if defined(_WIN64)
 	//DirectX::SimpleMath

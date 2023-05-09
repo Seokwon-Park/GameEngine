@@ -56,7 +56,14 @@ namespace PrimalEditor.Content
                 case PrimitiveMeshType.Cube:
                     return;
                 case PrimitiveMeshType.UvSphere:
-                    return;
+                    {
+                        info.SegmentX = (int)xSliderUvSphere.Value;
+                        info.SegmentY = (int)ySliderUvSphere.Value;
+                        info.Size.X = Value(xScalarBoxUvSphere, 0.001f);
+                        info.Size.Y = Value(yScalarBoxUvSphere, 0.001f);
+                        info.Size.Z = Value(zScalarBoxUvSphere, 0.001f);
+                    }
+                    break;
                 case PrimitiveMeshType.IcoSphere:
                     return;
                 case PrimitiveMeshType.Cylinder:
@@ -76,7 +83,9 @@ namespace PrimalEditor.Content
         {
             var uris = new List<Uri>
             {
-                new Uri("pack://application:,,,/Resources/PrimitiveMeshView/Screenshot.png")
+                new Uri("pack://application:,,,/Resources/PrimitiveMeshView/Screenshot.png"), // for plane
+                new Uri("pack://application:,,,/Resources/PrimitiveMeshView/Screenshot.png"), // for cube
+                new Uri("pack://application:,,,/Resources/PrimitiveMeshView/Screenshot.png"), // for uvsph
             };
 
             _textures.Clear();
