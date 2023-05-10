@@ -1,8 +1,11 @@
+
+
 #include "..\Platform\PlatformTypes.h"
 #include "..\Platform\Platform.h"
 #include "..\Graphics\Renderer.h"
 #include "TestRenderer.h"
 
+#ifdef TEST_RENDERER
 
 using namespace primal;
 
@@ -43,14 +46,12 @@ LRESULT win_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 	return DefWindowProc(hwnd, msg, wparam, lparam);
 }
 
-void
-create_render_surface(graphics::render_surface& surface, platform::window_init_info info)
+void create_render_surface(graphics::render_surface& surface, platform::window_init_info info)
 {
 	surface.window = platform::create_window(&info);
 }
 
-void
-destroy_render_surface(graphics::render_surface& surface)
+void destroy_render_surface(graphics::render_surface& surface)
 {
 	platform::remove_window(surface.window.get_id());
 }
@@ -90,3 +91,5 @@ void engine_test::shutdown()
 	}
 	graphics::shutdown();
 }
+
+#endif // TEST_RENDERER
