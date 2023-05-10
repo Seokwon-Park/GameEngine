@@ -312,5 +312,10 @@ namespace primal::graphics::d3d12::core
 		// signal and icrement the fence value for the next frame.
 		gfx_command.end_frame();
 	}
+
+	ID3D12Device* const device()
+	{
+		return main_device;
+	}
 }
 
