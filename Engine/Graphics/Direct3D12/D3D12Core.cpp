@@ -8,6 +8,9 @@ namespace primal::graphics::d3d12::core
 	{
 		class d3d12_command
 		{
+		public:
+			d3d12_command() = default;
+			DISABLE_COPY_AND_MOVE(d3d12_command);
 			explicit d3d12_command(ID3D12Device8* const device, D3D12_COMMAND_LIST_TYPE type) 
 			{
 				HRESULT hr{ S_OK };
@@ -47,14 +50,30 @@ namespace primal::graphics::d3d12::core
 					type == D3D12_COMMAND_LIST_TYPE_COMPUTE ?
 					L"Compute Command List" : L"Command List");
 
+				DXCall(hr = device->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&_fence)));
+				if (FAILED(hr)) goto _error;
+				NAME_D3D12_OBJECT(_fence, L"D3D12 Fence");
+
+				_fence_event = CreateEventEx(nullptr, nullptr, 0, EVENT_ALL_ACCESS);
+				assert(_fence_event);
+
+				return;
+
 			_error:
 				release();
 			}
 
+			~d3d12_command()
+			{
+				assert(!_cmd_queue && !_cmd_list && !_fence);
+			}
+
+
+			//
 			void begin_frame()
 			{
 				command_frame& frame{ _cmd_frames[_frame_index] };
-				frame.wait();
+				frame.wait(_fence_event, _fence);
 				DXCall(frame.cmd_allocator->Reset());
 				DXCall(_cmd_list->Reset(frame.cmd_allocator, nullptr));
 			}
@@ -64,22 +83,68 @@ namespace primal::graphics::d3d12::core
 				DXCall(_cmd_list->Close());
 				ID3D12CommandList* const cmd_lists[]{ _cmd_list };
 				_cmd_queue->ExecuteCommandLists(_countof(cmd_lists), &cmd_lists[0]);
+
+				u64& fence_value{ _fence_value };
+				++fence_value;
+				command_frame& frame{ _cmd_frames[_frame_index] };
+				frame.fence_value = fence_value;
+				_cmd_queue->Signal(_fence, fence_value);
 				
 				_frame_index = (_frame_index + 1) % frame_buffer_count;
 			}
 
+			void flush()
+			{
+				for (u32 i{ 0 }; i < frame_buffer_count; ++i)
+				{
+					_cmd_frames[i].wait(_fence_event, _fence);
+				}
+				_frame_index = 0;
+			}
+
 			void release()
 			{
+				flush();
+				core::release(_fence);
+				_fence_value = 0;
 
+				if (_fence_event)
+				{
+					CloseHandle(_fence_event);
+					_fence_event = nullptr;
+				}
+
+				core::release(_cmd_queue);
+				core::release(_cmd_list);
+
+				for (u32 i{ 0 }; i < frame_buffer_count; ++i)
+				{
+					_cmd_frames[i].release();
+				}
 			}
+
+			constexpr ID3D12CommandQueue* const command_queue() const { return _cmd_queue; }
+			constexpr ID3D12GraphicsCommandList6* const command_list() const { return _cmd_list; }
+			constexpr u32 frame_index() const { return _frame_index; }
+
 		private:
 			struct command_frame
 			{
 				ID3D12CommandAllocator* cmd_allocator{ nullptr };
+				u64 fence_value{ 0 };
 
-				void wait()
+				void wait(HANDLE fence_event, ID3D12Fence1* fence)
 				{
-
+					assert(fence && fence_event);
+					// 현재 fence_value(GetCompletedValue)의 값이 "fence_value"보다 작으면 gpu가 작업을 끝내지 못햇다는 것을 알 수 있다.
+					// "_cmd_queue->Signal()"에 도달하지 못했기 때문에
+					if (fence->GetCompletedValue() < fence_value)
+					{
+						// fence가 fence의 현재 값이 "fence_value"와 같아지면 신호를 보내는 이벤트를 생성하도록 합니다.
+						DXCall(fence->SetEventOnCompletion(fence_value, fence_event));
+						// 해당 이벤트에 대한 신호가 올때까지 기다린다.
+						WaitForSingleObject(fence_event, INFINITE);
+					}
 				}
 
 				void release()
@@ -90,12 +155,16 @@ namespace primal::graphics::d3d12::core
 
 			ID3D12CommandQueue* _cmd_queue{ nullptr };
 			ID3D12GraphicsCommandList6* _cmd_list{ nullptr };
+			ID3D12Fence1* _fence{ nullptr };
+			u64 _fence_value{ 0 };
 			command_frame _cmd_frames[frame_buffer_count]{};
+			HANDLE	_fence_event{ nullptr };
 			u32 _frame_index{ 0 };
 		};
 	
 		ID3D12Device8* main_device{ nullptr };
 		IDXGIFactory7* dxgi_factory{ nullptr };
+		d3d12_command gfx_command;
 
 		constexpr D3D_FEATURE_LEVEL minimum_feature_level{ D3D_FEATURE_LEVEL_11_0 };
 
@@ -182,6 +251,9 @@ namespace primal::graphics::d3d12::core
 		DXCall(hr = D3D12CreateDevice(main_adapter.Get(), max_feature_level, IID_PPV_ARGS(&main_device)));
 		if (FAILED(hr)) return failed_init();
 
+		new (&gfx_command) d3d12_command(main_device, D3D12_COMMAND_LIST_TYPE_DIRECT);
+		if (!gfx_command.command_queue()) return failed_init();
+
 		NAME_D3D12_OBJECT(main_device, L"Main D3D12 Device");
 
 #ifdef _DEBUG
@@ -202,6 +274,8 @@ namespace primal::graphics::d3d12::core
 
 	void shutdown()
 	{
+		gfx_command.release();
+
 		release(dxgi_factory);
 
 #ifdef _DEBUG
@@ -227,9 +301,16 @@ namespace primal::graphics::d3d12::core
 
 	void render()
 	{
-		begin_frame();
+		// gpu가 작업을 끝내기를 기다렸다가 끝나면 allocator를 리셋
+		// 명령을 저장하는데 사용한 메모리를 할당 해제
+		gfx_command.begin_frame();
+		ID3D12GraphicsCommandList6* cmd_list{ gfx_command.command_list() };
 
-		end_frame();
+		// Record commands
+		//...
+		// done recording commands. now execute commands,
+		// signal and icrement the fence value for the next frame.
+		gfx_command.end_frame();
 	}
 }
 
