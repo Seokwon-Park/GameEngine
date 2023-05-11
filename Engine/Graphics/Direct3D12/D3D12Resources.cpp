@@ -1,5 +1,6 @@
 #include "D3D12Resources.h"
 #include "D3D12Core.h"
+#include "D3D12Helpers.h"
 
 namespace primal::graphics::d3d12
 {
@@ -8,14 +9,14 @@ namespace primal::graphics::d3d12
 	{
 		std::lock_guard lock{ _mutex };
 		assert(capacity && capacity < D3D12_MAX_SHADER_VISIBLE_DESCRIPTOR_HEAP_SIZE_TIER_2);
-		assert(!(_type == D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER &&	
+		assert(!(_type == D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER &&
 			capacity > D3D12_MAX_SHADER_VISIBLE_SAMPLER_HEAP_SIZE));
 		if (_type == D3D12_DESCRIPTOR_HEAP_TYPE_DSV ||
 			_type == D3D12_DESCRIPTOR_HEAP_TYPE_RTV)
 		{
 			is_shader_visible = false;
 		}
-		
+
 		release();
 
 		ID3D12Device* const device{ core::device() };
@@ -79,7 +80,7 @@ namespace primal::graphics::d3d12
 		assert(_size < _capacity);
 
 		const u32 index{ _free_handles[_size] };
-		const u32 offset{ index *_descriptor_size };
+		const u32 offset{ index * _descriptor_size };
 		++_size;
 
 		descriptor_handle handle;
@@ -111,4 +112,53 @@ namespace primal::graphics::d3d12
 		core::set_deferred_releases_flag();
 		handle = {};
 	}
+	////////////////D3D12 TEXTURE ////////////////////////////////////////////////////
+	d3d12_texture::d3d12_texture(d3d12_texture_init_info info)
+	{
+		auto* const device{ core::device() };
+		assert(device);
+
+		D3D12_CLEAR_VALUE* const clear_value
+		{
+			(info.desc &&
+			(info.desc->Flags & D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET ||
+			info.desc->Flags & D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL))
+			? &info.clear_value : nullptr
+		};
+
+		if (info.resource)
+		{
+			assert(!info.heap);
+			_resource = info.resource;
+		}
+		else if (info.heap &&info.desc)
+		{
+			assert(!info.resource);
+			DXCall(device->CreatePlacedResource(
+				info.heap, info.allocation_info.Offset, info.desc,
+				info.initial_state, clear_value, IID_PPV_ARGS(&_resource)));
+		}
+		else if (info.desc)
+		{
+			assert(!info.heap && !info.resource);
+
+			DXCall(device->CreateCommittedResource(
+				&d3dx::heap_properties.default_heap, D3D12_HEAP_FLAG_NONE, info.desc,
+				info.initial_state, clear_value, IID_PPV_ARGS(&_resource)));
+		}
+
+		assert(_resource);
+		_srv = core::srv_heap().allocate();
+		device->CreateShaderResourceView(_resource, info.srv_desc, _srv.cpu);
+
+
+	}
+
+	void d3d12_texture::release()
+	{
+		core::srv_heap().free(_srv);
+		core::deferred_release(_resource);
+	}
+
+
 }

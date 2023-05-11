@@ -110,11 +110,11 @@ namespace primal::utl
 			}
 			assert(_size < _capacity);
 
-			new (std::addressof(_data[_size])) T(std::forward<params>(p)...);
+			T* const item{ new (std::addressof(_data[_size])) T(std::forward<params>(p)...) };
 			++_size;
-			return _data[_size - 1];
+			return *item;
 		}
-		// Resizes the vector and initializes new items by copying 'value'
+		// Resizes the vector and initializes new items with their default value.
 		constexpr void resize(u64 new_size)
 		{
 			static_assert(std::is_default_constructible_v<T>,
@@ -134,6 +134,36 @@ namespace primal::utl
 				{
 					destruct_range(new_size, _size);
 				}
+
+				_size = new_size;
+			}
+
+			// Do Nothing if new_size == _size.
+			assert(new_size == _size);
+		}
+
+		// Resizes the vector and initializes new items by copying 'value'
+		constexpr void resize(u64 new_size, const T& value)
+		{
+			static_assert(std::is_default_constructible_v<T>,
+				"Type must be copy-constructible.");
+
+			if (new_size > _size)
+			{
+				reserve(new_size);
+				while (_size < new_size)
+				{
+					emplace_back(value);
+				}
+			}
+			else if (new_size < _size)
+			{
+				if constexpr (destruct)
+				{
+					destruct_range(new_size, _size);
+				}
+
+				_size = new_size;
 			}
 
 			// Do Nothing if new_size == _size.
@@ -215,9 +245,9 @@ namespace primal::utl
 		{
 			if (this != std::addressof(0))
 			{
-				auto temp(o);
-				o = *this;
-				*this = temp;
+				auto temp(std::move(o));
+				o = std::move(*this);
+				*this = std::move(temp);
 			}
 		}
 
