@@ -40,6 +40,8 @@ namespace primal::graphics::d3d12
 
 			return *this;
 		}
+#else
+		DISABLE_COPY_AND_MOVE(d3d12_surface);
 #endif // USE_STL_VECTOR
 
 		~d3d12_surface() { release(); }
@@ -93,7 +95,7 @@ namespace primal::graphics::d3d12
 			_viewport = {};
 			_scissor_rect = {};
 		}
-#endif // USE_STL_VECTOR
+#endif USE_STL_VECTOR
 
 
 
