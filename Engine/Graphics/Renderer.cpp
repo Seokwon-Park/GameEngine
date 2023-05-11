@@ -31,10 +31,10 @@ namespace primal::graphics
 		gfx.shutdown();
 	}
 
-	void render()
-	{
-		gfx.render();
-	}
+	//void render()
+	//{
+	//	gfx.render();
+	//}
 
 	surface create_surface(platform::window window)
 	{
