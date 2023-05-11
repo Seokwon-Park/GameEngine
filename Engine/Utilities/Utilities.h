@@ -39,3 +39,5 @@ namespace primal::utl
 {
 	//TODO: implement our own containers
 }
+
+#include "FreeList.h"
