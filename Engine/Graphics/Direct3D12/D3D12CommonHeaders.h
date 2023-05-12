@@ -1,6 +1,6 @@
 #pragma once
 #include "CommonHeaders.h"
-#include "Graphics/Renderer.h"
+#include "Graphics\Renderer.h"
 #include "Platform\Window.h"
 
 #include <dxgi1_6.h>
@@ -59,3 +59,5 @@ if (swprintf_s(full_name, L"%s[%u]", name, n) > 0)	\
 #define NAME_D3D12_OBJECT(x, name)
 #endif // _DEBUG
 
+#include "D3D12Helpers.h"
+#include "D3D12Resources.h"
