@@ -1,9 +1,8 @@
-
-
 #include "..\Platform\PlatformTypes.h"
 #include "..\Platform\Platform.h"
 #include "..\Graphics\Renderer.h"
 #include "TestRenderer.h"
+#include "ShaderCompilation.h"
 
 #if TEST_RENDERER
 //////////////////////////////////////////////////////////////////////////// SFINAE
@@ -114,6 +113,12 @@ void destroy_render_surface(graphics::render_surface& surface)
 bool
 engine_test::initialize()
 {
+	while (!compile_shaders())
+	{
+		// Pop up a message box allowing the user to retry compilation.
+		if (MessageBox(nullptr, L"Failed to compile engine shaders.", L"Shader Compilation Error", MB_RETRYCANCEL) != IDRETRY)
+			return false;
+	}
 	bool result{ graphics::initialize(graphics::graphics_platform::direct3d12) };
 	if (!result) return result;
 

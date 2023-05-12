@@ -5,5 +5,7 @@ namespace primal::content
 {
 	bool load_game();
 	void unload_game();
+
+	bool load_engine_shaders(std::unique_ptr<u8[]>& shader, u64 size);
 }
-#endif //!defined(SHIPPING
+#endif //!defined(SHIPPING)
