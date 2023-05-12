@@ -6,7 +6,39 @@
 #include "TestRenderer.h"
 
 #if TEST_RENDERER
-
+//////////////////////////////////////////////////////////////////////////// SFINAE
+//template <bool test, typename T = void>
+//struct enable_if {};
+//
+//template <typename T>
+//struct enable_if<true, T> { using type = T; };
+//
+//template <bool test, typename T = void>
+//using enable_if_t = typename enable_if<test, T>::type;
+//
+//template<typename T>
+//using iterator_cat_t = typename std::iterator_traits<T>::iterator_category;
+//
+//template<typename T>
+//using void_t = void;
+//
+//template<typename T, typename=void>
+//constexpr bool is_iterator_v = false;
+//
+//template<typename T>
+//constexpr bool is_iterator_v<T, void_t<iterator_cat_t<T>>> = true;
+//
+//template<typename T, enable_if_t<is_iterator_v<T>, int> = 0>
+//void function(T t)
+//{
+//	// ...
+//}
+//
+//void function(int t)
+//{
+//	// ...
+//}
+////////////////////////////////////////////////////////////////////////////
 using namespace primal;
 
 graphics::render_surface _surfaces[4];
@@ -15,6 +47,9 @@ void destroy_render_surface(graphics::render_surface& surface);
 
 LRESULT win_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 {
+	//function(1234); // T = int
+	//function(&hwnd); // T = pointer to hwnd (a pointer is also an iterator category, it's a type of iterator)
+
 	switch (msg)
 	{
 	case WM_DESTROY:

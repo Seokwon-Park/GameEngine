@@ -68,23 +68,37 @@ namespace primal::content {
 			read_transform,
 			read_script,
 		};
-		static_assert(_countof(component_readers) == component_type::count);
+		static_assert(_countof(component_readers) == component_type::count);	
+
+		bool read_file(std::filesystem::path path, std::unique_ptr<u8[]>& data, u64& size)
+		{
+			if (!std::filesystem::exists(path)) return false;
+
+			size = std::filesystem::file_size(path);
+			assert(size);
+			if (!size) return false;
+			data = std::make_unique<u8[]>(size);
+			std::ifstream file{ path, std::ios::in | std::ios::binary };
+			if (!file || !file.read((char*)data.get(), size))
+			{
+				file.close();
+				return false;
+			}
+			file.close();
+			return true;
+		}
 	} // anonymous namespace
 		
+
+
 	bool load_game()
 	{
-		// set the working directory to the executable path
-		wchar_t path[MAX_PATH];//윈도우 최대경로 길이 260
-		const u32 length{ GetModuleFileName(0, &path[0], MAX_PATH) };//실행중인 실행파일의 위치를 path에 저장
-		if (!length || GetLastError() == ERROR_INSUFFICIENT_BUFFER) return false; // 경로가 너무 길어도 false
-		std::filesystem::path p{ path };//받아온 path를 저장
-		SetCurrentDirectory(p.parent_path().wstring().c_str());
-
 		// read game.bin and create the entities.
-		std::ifstream game("game.bin", std::ios::in | std::ios::binary);
-		utl::vector<u8> buffer(std::istreambuf_iterator<char>(game), {});
-		assert(buffer.size());
-		const u8* at{ buffer.data() };
+		std::unique_ptr<u8[]> game_data{};
+		u64 size{ 0 };
+		if (!read_file("game.bin", game_data, size))return false;
+		assert(game_data.get());
+		const u8* at{ game_data.get() };
 		constexpr u32 su32{ sizeof(u32) };
 		const u32 num_entities{ *at }; at += su32;
 		if (!num_entities) return false;
@@ -111,7 +125,7 @@ namespace primal::content {
 			entities.emplace_back(entity);
 		}
 		
-		assert(at == buffer.data() + buffer.size());
+		assert(at == game_data.get() + size);
 		return true;
 	}
 

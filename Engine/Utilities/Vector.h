@@ -25,15 +25,6 @@ namespace primal::utl
 			resize(count, value);
 		}
 
-		template<typename it, typename = std::enable_if_t<std::_Is_iterator_v<it>>>
-		constexpr explicit vector(it first, it last)
-		{
-			for (; first != last; ++first)
-			{
-				emplace_back(*first);
-			}
-		}
-
 		// Copy-constructor. Constructs by copying another vector. The items
 		// in the copied vector must be copyable
 		constexpr vector(const vector& o)
@@ -41,6 +32,7 @@ namespace primal::utl
 			*this = o;
 		}
 
+		// need to delete const?
 		// Move-constructor. Constructs by copying another vector. 
 		// The original vector will be empty after move.
 		constexpr vector(const vector&& o)
@@ -68,6 +60,7 @@ namespace primal::utl
 			return *this;
 		}
 
+		
 		// Move-assignment operator. Frees all resources in this vector and
 		// moves the other vector into this one.
 		constexpr vector& operator=(const vector&& o)
@@ -117,7 +110,7 @@ namespace primal::utl
 		// Resizes the vector and initializes new items with their default value.
 		constexpr void resize(u64 new_size)
 		{
-			static_assert(std::is_default_constructible_v<T>,
+			static_assert(std::is_default_constructible<T>::value,
 				"Type must be copy-constructible.");
 
 			if (new_size > _size)
@@ -145,7 +138,7 @@ namespace primal::utl
 		// Resizes the vector and initializes new items by copying 'value'
 		constexpr void resize(u64 new_size, const T& value)
 		{
-			static_assert(std::is_default_constructible_v<T>,
+			static_assert(std::is_copy_constructible<T>::value,
 				"Type must be copy-constructible.");
 
 			if (new_size > _size)
