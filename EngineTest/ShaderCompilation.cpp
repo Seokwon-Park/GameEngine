@@ -131,8 +131,8 @@ namespace
 			return shader.Detach();
 		}
 	private:
-
-		const char* _profile_strings[shader_type::count]{ "vs_6_5", "hs_6_5", "ds_6_5", "gs_6_5", "ps_6_5", "cs_6_5", "as_6_5", "ms_6_5" };
+		// NOTE Shader Model 6.x can  also be used( AS and MS are only supported from SM6.5 on)
+		constexpr static const char* _profile_strings[shader_type::count]{ "vs_6_5", "hs_6_5", "ds_6_5", "gs_6_5", "ps_6_5", "cs_6_5", "as_6_5", "ms_6_5" };
 		static_assert(_countof(_profile_strings) == shader_type::count);
 
 		// 36.3 영상에서는 IDxcCompiler3가 포함되어있지 않았으나 현재는 그냥 포함되어 있으므로 스킵 
@@ -143,7 +143,7 @@ namespace
 
 	decltype(auto) get_engine_shaders_path()
 	{
-		return std::filesystem::absolute(graphics::get_engine_shaders_path(graphics::graphics_platform::direct3d12));
+		return std::filesystem::path{ graphics::get_engine_shaders_path(graphics::graphics_platform::direct3d12) };
 	}
 
 	bool compiled_shaders_are_up_to_date()
@@ -164,7 +164,7 @@ namespace
 
 			path = shaders_source_path;
 			path += info.file;
-			full_path = std::filesystem::absolute(path);
+			full_path = path;
 			if (!std::filesystem::exists(full_path)) return false;
 				
 			auto shader_file_time= std::filesystem::last_write_time(full_path);
@@ -209,7 +209,6 @@ bool compile_shaders()
 	std::filesystem::path full_path{};
 
 	shader_compiler compiler{};
-
 	// compile shaders and them together in a buffer in the same order of compilation.
 	for (u32 i{ 0 }; i < engine_shader::count; ++i)
 	{
@@ -217,10 +216,10 @@ bool compile_shaders()
 
 		path = shaders_source_path;
 		path += info.file;
-		full_path = std::filesystem::absolute(path);
+		full_path = path;
 		if (!std::filesystem::exists(full_path)) return false;
 		ComPtr<IDxcBlob> compiled_shader{ compiler.compile(info,full_path) };
-		if (compiled_shader->GetBufferPointer(), compiled_shader->GetBufferSize())
+		if (compiled_shader && compiled_shader->GetBufferPointer() && compiled_shader->GetBufferSize())
 		{
 			shaders.emplace_back(std::move(compiled_shader));
 		}
