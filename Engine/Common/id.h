@@ -29,7 +29,7 @@ namespace primal::id
 
 	constexpr id_type index(id_type id)//index 구하는 함수
 	{
-		id_type index{ id & detail::index_mask };
+		[[maybe_unused]] id_type index{ id & detail::index_mask };
 		assert(index != detail::index_mask);
 		return id & detail::index_mask;
 	}

@@ -236,7 +236,7 @@ namespace primal::utl
 
 		constexpr void swap(vector& o)
 		{
-			if (this != std::addressof(0))
+			if (this != std::addressof(o))
 			{
 				auto temp(std::move(o));
 				o = std::move(*this);
