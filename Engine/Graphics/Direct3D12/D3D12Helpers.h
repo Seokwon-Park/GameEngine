@@ -14,6 +14,82 @@ namespace primal::graphics::d3d12::d3dx
 		};
 	}heap_properties;
 
+	constexpr struct
+	{
+		const D3D12_RASTERIZER_DESC no_cull
+		{
+			D3D12_FILL_MODE_SOLID,						// FillMode;
+			D3D12_CULL_MODE_NONE,						// CullMode;
+			0,											// FrontCounterClockwise;
+			0,											// DepthBias;
+			0,											// DepthBiasClamp;
+			0,											// SlopeScaledDepthBias;
+			1,											// DepthClipEnable;
+			1,											// MultisampleEnable;
+			0,											// AntialiasedLineEnable;
+			0,											// ForcedSampleCount;
+			D3D12_CONSERVATIVE_RASTERIZATION_MODE_OFF	// ConservativeRaster;
+		};
+		const D3D12_RASTERIZER_DESC backface_cull
+		{
+			D3D12_FILL_MODE_SOLID,						// FillMode;
+			D3D12_CULL_MODE_BACK,						// CullMode;
+			0,											// FrontCounterClockwise;
+			0,											// DepthBias;
+			0,											// DepthBiasClamp;
+			0,											// SlopeScaledDepthBias;
+			1,											// DepthClipEnable;
+			1,											// MultisampleEnable;
+			0,											// AntialiasedLineEnable;
+			0,											// ForcedSampleCount;
+			D3D12_CONSERVATIVE_RASTERIZATION_MODE_OFF	// ConservativeRaster;
+		};
+		const D3D12_RASTERIZER_DESC frontface_cull
+		{
+			D3D12_FILL_MODE_SOLID,						// FillMode;
+			D3D12_CULL_MODE_FRONT,						// CullMode;
+			0,											// FrontCounterClockwise;
+			0,											// DepthBias;
+			0,											// DepthBiasClamp;
+			0,											// SlopeScaledDepthBias;
+			1,											// DepthClipEnable;
+			1,											// MultisampleEnable;
+			0,											// AntialiasedLineEnable;
+			0,											// ForcedSampleCount;
+			D3D12_CONSERVATIVE_RASTERIZATION_MODE_OFF	// ConservativeRaster;
+		};
+		const D3D12_RASTERIZER_DESC wireframe
+		{
+			D3D12_FILL_MODE_WIREFRAME,					// FillMode;
+			D3D12_CULL_MODE_NONE,						// CullMode;
+			0,											// FrontCounterClockwise;
+			0,											// DepthBias;
+			0,											// DepthBiasClamp;
+			0,											// SlopeScaledDepthBias;
+			1,											// DepthClipEnable;
+			1,											// MultisampleEnable;
+			0,											// AntialiasedLineEnable;
+			0,											// ForcedSampleCount;
+			D3D12_CONSERVATIVE_RASTERIZATION_MODE_OFF	// ConservativeRaster;
+		};
+	}rasterizer_state;
+
+	constexpr struct
+	{
+		const D3D12_DEPTH_STENCIL_DESC1 disabled
+		{
+			0,													//BOOL DepthEnable;
+			D3D12_DEPTH_WRITE_MASK_ZERO,						//D3D12_DEPTH_WRITE_MASK DepthWriteMask;
+			D3D12_COMPARISON_FUNC_LESS_EQUAL,					//D3D12_COMPARISON_FUNC DepthFunc;
+			0,													//BOOL StencilEnable;
+			0,													//UINT8 StencilReadMask;
+			0,													//UINT8 StencilWriteMask;
+			{},													//D3D12_DEPTH_STENCILOP_DESC FrontFace;
+			{},													//D3D12_DEPTH_STENCILOP_DESC BackFace;
+			0													//BOOL DepthBoundsTestEnable;
+		};
+	}depth_state;
+
 	ID3D12RootSignature* create_root_signature(const D3D12_ROOT_SIGNATURE_DESC1& desc);
 
 	struct d3d12_descriptor_range : public D3D12_DESCRIPTOR_RANGE1
@@ -106,6 +182,8 @@ namespace primal::graphics::d3d12::d3dx
 		}
 	};
 
+#pragma warning(push)
+#pragma warning(disable:4324) // disable padding warning
 	template<D3D12_PIPELINE_STATE_SUBOBJECT_TYPE type, typename T>
 	class alignas(void*) d3d12_pipeline_state_subobject
 	{
@@ -117,6 +195,8 @@ namespace primal::graphics::d3d12::d3dx
 		const D3D12_PIPELINE_STATE_SUBOBJECT_TYPE _type{ type };
 		T _subobject{};
 	};
+#pragma warning(pop)
+
 	// Pipeline State subobject (PSS) macro
 #define PSS(name, ...) using d3d12_pipeline_state_subobject_##name = d3d12_pipeline_state_subobject<__VA_ARGS__>;
 	PSS(root_signature, D3D12_PIPELINE_STATE_SUBOBJECT_TYPE_ROOT_SIGNATURE, ID3D12RootSignature*);
@@ -130,7 +210,7 @@ namespace primal::graphics::d3d12::d3dx
 	PSS(blend, D3D12_PIPELINE_STATE_SUBOBJECT_TYPE_BLEND, D3D12_BLEND_DESC);
 	PSS(sample_mask, D3D12_PIPELINE_STATE_SUBOBJECT_TYPE_SAMPLE_MASK, u32);
 	PSS(rasterizer, D3D12_PIPELINE_STATE_SUBOBJECT_TYPE_RASTERIZER, D3D12_RASTERIZER_DESC);
-	PSS(depth_stencil, D3D12_PIPELINE_STATE_SUBOBJECT_TYPE_DEPTH_STENCIL, D3D12_DEPTH_STENCIL_DESC);
+	PSS(depth_stencil, D3D12_PIPELINE_STATE_SUBOBJECT_TYPE_DEPTH_STENCIL, D3D12_DEPTH_STENCIL_DESC1);
 	PSS(input_layout, D3D12_PIPELINE_STATE_SUBOBJECT_TYPE_INPUT_LAYOUT, D3D12_INPUT_LAYOUT_DESC);
 	PSS(ib_strip_cut_value, D3D12_PIPELINE_STATE_SUBOBJECT_TYPE_IB_STRIP_CUT_VALUE, D3D12_INDEX_BUFFER_STRIP_CUT_VALUE);
 	PSS(primitive_topology, D3D12_PIPELINE_STATE_SUBOBJECT_TYPE_PRIMITIVE_TOPOLOGY, D3D12_PRIMITIVE_TOPOLOGY_TYPE);

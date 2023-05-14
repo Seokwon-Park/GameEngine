@@ -29,9 +29,9 @@ namespace primal::id
 
 	constexpr id_type index(id_type id)//index 구하는 함수
 	{
-		[[maybe_unused]] id_type index{ id & detail::index_mask };
+		id_type index{ id & detail::index_mask };
 		assert(index != detail::index_mask);
-		return id & detail::index_mask;
+		return index;
 	}
 
 	constexpr id_type generation(id_type id)//generation구하는 함수
