@@ -78,17 +78,88 @@ namespace primal::graphics::d3d12::d3dx
 	{
 		const D3D12_DEPTH_STENCIL_DESC1 disabled
 		{
-			0,													//BOOL DepthEnable;
-			D3D12_DEPTH_WRITE_MASK_ZERO,						//D3D12_DEPTH_WRITE_MASK DepthWriteMask;
-			D3D12_COMPARISON_FUNC_LESS_EQUAL,					//D3D12_COMPARISON_FUNC DepthFunc;
-			0,													//BOOL StencilEnable;
-			0,													//UINT8 StencilReadMask;
-			0,													//UINT8 StencilWriteMask;
-			{},													//D3D12_DEPTH_STENCILOP_DESC FrontFace;
-			{},													//D3D12_DEPTH_STENCILOP_DESC BackFace;
-			0													//BOOL DepthBoundsTestEnable;
+			0,													//DepthEnable;
+			D3D12_DEPTH_WRITE_MASK_ZERO,						//DepthWriteMask;
+			D3D12_COMPARISON_FUNC_LESS_EQUAL,					//DepthFunc;
+			0,													//StencilEnable;
+			0,													//StencilReadMask;
+			0,													//StencilWriteMask;
+			{},													//FrontFace;
+			{},													//BackFace;
+			0,													//DepthBoundsTestEnable
 		};
 	}depth_state;
+
+	class d3d12_resource_barrier
+	{
+	public:
+		constexpr static u32 max_resource_barriers{ 32 };
+		// add a transition barrier to the list of barriers.
+		constexpr void add(ID3D12Resource* resource,
+			D3D12_RESOURCE_STATES before, D3D12_RESOURCE_STATES after,
+			D3D12_RESOURCE_BARRIER_FLAGS flags = D3D12_RESOURCE_BARRIER_FLAG_NONE,
+			u32 subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES)
+		{
+			assert(resource);
+			assert(_offset < max_resource_barriers);
+			D3D12_RESOURCE_BARRIER barrier{ _barriers[_offset]};
+			barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
+			barrier.Flags = flags;
+			barrier.Transition.pResource = resource;
+			barrier.Transition.StateBefore = before;
+			barrier.Transition.StateAfter = after;
+			barrier.Transition.Subresource = subresource;
+
+			++_offset;
+		}
+
+		// add a uav barrier to the list of barriers,
+		constexpr void add(ID3D12Resource* resource,
+			D3D12_RESOURCE_BARRIER_FLAGS flags = D3D12_RESOURCE_BARRIER_FLAG_NONE)
+		{
+			assert(resource);
+			assert(_offset < max_resource_barriers);
+			D3D12_RESOURCE_BARRIER barrier{ _barriers[_offset] };
+			barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
+			barrier.Flags = flags;
+			barrier.UAV.pResource = resource;
+
+			++_offset;
+		}
+
+		// Add an aliasing barrier to the list of barriers.
+		constexpr void add(ID3D12Resource* resource_before, ID3D12Resource* resource_after,
+			D3D12_RESOURCE_BARRIER_FLAGS flags = D3D12_RESOURCE_BARRIER_FLAG_NONE)
+		{
+			assert(resource_before && resource_after);
+			assert(_offset < max_resource_barriers);
+			D3D12_RESOURCE_BARRIER barrier{ _barriers[_offset] };
+			barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_ALIASING;
+			barrier.Flags = flags;
+			barrier.Aliasing.pResourceBefore = resource_before;
+			barrier.Aliasing.pResourceAfter = resource_after;
+
+			++_offset;
+		}
+
+		void apply(id3d12_graphics_command_list* cmd_list)
+		{
+			assert(_offset);
+			cmd_list->ResourceBarrier(_offset, _barriers);
+			_offset = 0;
+		}
+			
+	private:
+		D3D12_RESOURCE_BARRIER _barriers[max_resource_barriers]{};
+		u32 _offset{ 0 };
+	};
+
+	void transition_resource(
+		id3d12_graphics_command_list* cmd_list,
+		ID3D12Resource* resource,
+		D3D12_RESOURCE_STATES before, D3D12_RESOURCE_STATES after,
+		D3D12_RESOURCE_BARRIER_FLAGS flag = D3D12_RESOURCE_BARRIER_FLAG_NONE,
+		u32 subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES);
 
 	ID3D12RootSignature* create_root_signature(const D3D12_ROOT_SIGNATURE_DESC1& desc);
 
@@ -183,7 +254,7 @@ namespace primal::graphics::d3d12::d3dx
 	};
 
 #pragma warning(push)
-#pragma warning(disable:4324) // disable padding warning
+#pragma warning(disable : 4324) // disable padding warning
 	template<D3D12_PIPELINE_STATE_SUBOBJECT_TYPE type, typename T>
 	class alignas(void*) d3d12_pipeline_state_subobject
 	{
@@ -197,7 +268,7 @@ namespace primal::graphics::d3d12::d3dx
 	};
 #pragma warning(pop)
 
-	// Pipeline State subobject (PSS) macro
+// Pipeline State subobject (PSS) macro
 #define PSS(name, ...) using d3d12_pipeline_state_subobject_##name = d3d12_pipeline_state_subobject<__VA_ARGS__>;
 	PSS(root_signature, D3D12_PIPELINE_STATE_SUBOBJECT_TYPE_ROOT_SIGNATURE, ID3D12RootSignature*);
 	PSS(vs, D3D12_PIPELINE_STATE_SUBOBJECT_TYPE_VS, D3D12_SHADER_BYTECODE);
@@ -210,7 +281,7 @@ namespace primal::graphics::d3d12::d3dx
 	PSS(blend, D3D12_PIPELINE_STATE_SUBOBJECT_TYPE_BLEND, D3D12_BLEND_DESC);
 	PSS(sample_mask, D3D12_PIPELINE_STATE_SUBOBJECT_TYPE_SAMPLE_MASK, u32);
 	PSS(rasterizer, D3D12_PIPELINE_STATE_SUBOBJECT_TYPE_RASTERIZER, D3D12_RASTERIZER_DESC);
-	PSS(depth_stencil, D3D12_PIPELINE_STATE_SUBOBJECT_TYPE_DEPTH_STENCIL, D3D12_DEPTH_STENCIL_DESC1);
+	PSS(depth_stencil, D3D12_PIPELINE_STATE_SUBOBJECT_TYPE_DEPTH_STENCIL, D3D12_DEPTH_STENCIL_DESC);
 	PSS(input_layout, D3D12_PIPELINE_STATE_SUBOBJECT_TYPE_INPUT_LAYOUT, D3D12_INPUT_LAYOUT_DESC);
 	PSS(ib_strip_cut_value, D3D12_PIPELINE_STATE_SUBOBJECT_TYPE_IB_STRIP_CUT_VALUE, D3D12_INDEX_BUFFER_STRIP_CUT_VALUE);
 	PSS(primitive_topology, D3D12_PIPELINE_STATE_SUBOBJECT_TYPE_PRIMITIVE_TOPOLOGY, D3D12_PRIMITIVE_TOPOLOGY_TYPE);

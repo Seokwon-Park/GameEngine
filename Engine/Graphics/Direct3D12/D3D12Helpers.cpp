@@ -1,12 +1,30 @@
 #include "D3D12Helpers.h"
 #include "D3D12Core.h"
 
-namespace primal::graphics::d3d12::d3dx 
+namespace primal::graphics::d3d12::d3dx
 {
-	namespace 
+	namespace
 	{
 
 	}// anonymous namespace
+
+	void transition_resource(
+		id3d12_graphics_command_list* cmd_list,
+		ID3D12Resource* resource,
+		D3D12_RESOURCE_STATES before, D3D12_RESOURCE_STATES after,
+		D3D12_RESOURCE_BARRIER_FLAGS flags /*= D3D12_RESOURCE_BARRIER_FLAG_NONE*/,
+		u32 subresource /*= D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES*/)
+	{
+		D3D12_RESOURCE_BARRIER barrier{};
+		barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
+		barrier.Flags = flags;
+		barrier.Transition.pResource = resource;
+		barrier.Transition.StateBefore = before;
+		barrier.Transition.StateAfter = after;
+		barrier.Transition.Subresource = subresource;
+
+		cmd_list->ResourceBarrier(1, &barrier);
+	}
 
 	ID3D12RootSignature* create_root_signature(const D3D12_ROOT_SIGNATURE_DESC1& desc)
 	{
@@ -17,7 +35,7 @@ namespace primal::graphics::d3d12::d3dx
 		using namespace Microsoft::WRL;
 		ComPtr<ID3DBlob> signature_blob{ nullptr };
 		ComPtr<ID3DBlob> error_blob{ nullptr };
-		 HRESULT hr{ S_OK };
+		HRESULT hr{ S_OK };
 		if (FAILED(hr = D3D12SerializeVersionedRootSignature(&versioned_desc, &signature_blob, &error_blob)))
 		{
 			DEBUG_OP(const char* error_msg{ error_blob ? (const char*)error_blob->GetBufferPointer() : "" });

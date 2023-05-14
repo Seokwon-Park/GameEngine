@@ -2,7 +2,7 @@
 #include "D3D12Core.h"
 #include "D3D12Shaders.h"
 
-namespace primal::graphics::d3d12::gpass 
+namespace primal::graphics::d3d12::gpass
 {
 	namespace
 	{
@@ -49,7 +49,7 @@ namespace primal::graphics::d3d12::gpass
 				info.initial_state = D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE;
 				info.clear_value.Format = desc.Format;
 				memcpy(&info.clear_value.Color, &clear_value[0], sizeof(clear_value));
-				gpass_main_buffer = d3d12_render_texture{ info };					
+				gpass_main_buffer = d3d12_render_texture{ info };
 			}
 
 			desc.Flags = D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL;
@@ -76,7 +76,7 @@ namespace primal::graphics::d3d12::gpass
 
 		bool create_gpass_pso_and_root_signature()
 		{
-			assert(!gpass_root_sig && gpass_pso);
+			assert(!gpass_root_sig && !gpass_pso);
 
 			//Create GPass root signature
 			d3dx::d3d12_root_parameter parameters[1]{};
@@ -91,12 +91,12 @@ namespace primal::graphics::d3d12::gpass
 			{
 				d3dx::d3d12_pipeline_state_subobject_root_signature root_signature{ gpass_root_sig };
 				d3dx::d3d12_pipeline_state_subobject_vs vs{ shaders::get_engine_shader(shaders::engine_shader::fullscreen_triangle_vs) };
-				d3dx::d3d12_pipeline_state_subobject_vs ps{ shaders::get_engine_shader(shaders::engine_shader::fill_color_ps) };
+				d3dx::d3d12_pipeline_state_subobject_ps ps{ shaders::get_engine_shader(shaders::engine_shader::fill_color_ps) };
 				d3dx::d3d12_pipeline_state_subobject_primitive_topology primitive_topology{ D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE };
 				d3dx::d3d12_pipeline_state_subobject_render_target_formats render_target_formats;
 				d3dx::d3d12_pipeline_state_subobject_depth_stencil_format depth_stencil_format{ depth_buffer_format };
-				d3dx::d3d12_pipeline_state_subobject_rasterizer rasterizer{ d3dx::rasterizer_state.no_cull};
-				d3dx::d3d12_pipeline_state_subobject_depth_stencil depth{ d3dx::depth_state.disabled};
+				d3dx::d3d12_pipeline_state_subobject_rasterizer rasterizer{ d3dx::rasterizer_state.no_cull };
+				d3dx::d3d12_pipeline_state_subobject_depth_stencil1 depth{ d3dx::depth_state.disabled };
 			}stream;
 
 			D3D12_RT_FORMAT_ARRAY rtf_array{};
@@ -106,7 +106,7 @@ namespace primal::graphics::d3d12::gpass
 			stream.render_target_formats = rtf_array;
 
 			gpass_pso = d3dx::create_pipeline_state(&stream, sizeof(stream));
-			NAME_D3D12_OBJECT(gpass_pso, L"GPass Root Signature");
+			NAME_D3D12_OBJECT(gpass_pso, L"GPass Pso Signature");
 
 			return gpass_root_sig && gpass_pso;
 		}
@@ -133,8 +133,8 @@ namespace primal::graphics::d3d12::gpass
 		math::u32v2& d{ dimensions };
 		if (size.x > d.x || size.y > d.y)
 		{
-			d = { (std::max)(size.x, d.x), (std::max)(size.y, d.y)};
-			create_buffers(size);
+			d = { (std::max)(size.x, d.x), (std::max)(size.y, d.y) };
+			create_buffers(d);
 		}
 	}
 
@@ -144,6 +144,53 @@ namespace primal::graphics::d3d12::gpass
 	{
 		cmd_list->SetGraphicsRootSignature(gpass_root_sig);
 		cmd_list->SetPipelineState(gpass_pso);
+
+		static u32 frame{ 0 };
+		++frame;
+		cmd_list->SetGraphicsRoot32BitConstant(0, frame, 0);
+
+		cmd_list->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+		cmd_list->DrawInstanced(3, 1, 0, 0);
+	}
+
+	void add_transitions_for_depth_prepass(d3dx::d3d12_resource_barrier& barriers)
+	{
+		barriers.add(gpass_depth_buffer.resource(),
+			D3D12_RESOURCE_STATE_DEPTH_READ | D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE | D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE,
+			D3D12_RESOURCE_STATE_DEPTH_WRITE);
+	}
+	void add_transitions_for_gpass(d3dx::d3d12_resource_barrier& barriers)
+	{
+		barriers.add(gpass_main_buffer.resource(),
+			D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE,
+			D3D12_RESOURCE_STATE_RENDER_TARGET);
+		barriers.add(gpass_depth_buffer.resource(),
+			D3D12_RESOURCE_STATE_DEPTH_WRITE,
+			D3D12_RESOURCE_STATE_DEPTH_READ | D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE | D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
+
+	}
+	void add_transitions_for_post_prepass(d3dx::d3d12_resource_barrier& barriers)
+	{
+		barriers.add(gpass_main_buffer.resource(),
+			D3D12_RESOURCE_STATE_RENDER_TARGET,
+			D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+	}
+
+	void set_render_targets_for_depth_prepass(id3d12_graphics_command_list* cmd_list)
+	{
+		const D3D12_CPU_DESCRIPTOR_HANDLE dsv{ gpass_depth_buffer.dsv() };
+		cmd_list->ClearDepthStencilView(dsv, D3D12_CLEAR_FLAG_DEPTH | D3D12_CLEAR_FLAG_STENCIL, 0.f, 0, 0, nullptr);
+		cmd_list->OMSetRenderTargets(0, nullptr, 0, &dsv);
+	}
+
+
+	void set_render_targets_for_gpass(id3d12_graphics_command_list* cmd_list)
+	{
+		const D3D12_CPU_DESCRIPTOR_HANDLE rtv{ gpass_main_buffer.rtv(0) };
+		const D3D12_CPU_DESCRIPTOR_HANDLE dsv{ gpass_depth_buffer.dsv() };
+
+		cmd_list->ClearRenderTargetView(rtv, clear_value, 0, nullptr);
+		cmd_list->OMSetRenderTargets(1, &rtv, 0, &dsv);
 	}
 }
 
