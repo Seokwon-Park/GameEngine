@@ -25,5 +25,5 @@ Geometry 데이터 저장 방식에 대해 추가 공부 필요
 - nullptr 문제의 경우 return을 빼먹었는지 or &, *을 안썼는지
    
 Issue   
-SetGraphicsRoot32Constants로 shader에 Constant 전달이 안된다.......
-이유는 모름..
+SetGraphicsRoot32Constants로 shader에 Constant 전달이 안된다.
+-> 인자로 PS를 잘못전달 ㅋ; (2시간 날림)
