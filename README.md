@@ -16,3 +16,14 @@ Dependency 설정(유튜브 영상에도 나중에 설명나옴)
 
 ### 2023-05-05   
 Geometry 데이터 저장 방식에 대해 추가 공부 필요
+
+자주 발생한 오류 체크리스트   
+- 오타 확인, 특히 셰이더 부분 "name.HLSL"
+- initialize와 release 올바르게 했는지 체크 (순서 release는 initialize의 역순)
+- header include 순서 체크
+- pointer, reference 인자값 전달 체크
+- nullptr 문제의 경우 return을 빼먹었는지 or &, *을 안썼는지
+   
+Issue   
+SetGraphicsRoot32Constants로 shader에 Constant 전달이 안된다.
+-> 인자로 PS를 잘못전달 ㅋ; (2시간 날림)
