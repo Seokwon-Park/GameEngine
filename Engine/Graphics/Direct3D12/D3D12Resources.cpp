@@ -158,6 +158,7 @@ namespace primal::graphics::d3d12
 		core::srv_heap().free(_srv);
 		core::deferred_release(_resource);
 	}
+
 	////////////////RENDER TEXTURE ////////////////////////////////////////////////////
 	d3d12_render_texture::d3d12_render_texture(d3d12_texture_init_info info)
 		: _texture{ info }
@@ -181,6 +182,7 @@ namespace primal::graphics::d3d12
 			++desc.Texture2D.MipSlice;
 		}
 	}
+
 	void d3d12_render_texture::release()
 	{
 		for (u32 i{ 0 }; i < _mip_count; ++i) core::rtv_heap().free(_rtv[i]);

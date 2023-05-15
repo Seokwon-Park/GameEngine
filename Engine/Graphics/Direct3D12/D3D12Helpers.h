@@ -102,7 +102,7 @@ namespace primal::graphics::d3d12::d3dx
 		{
 			assert(resource);
 			assert(_offset < max_resource_barriers);
-			D3D12_RESOURCE_BARRIER barrier{ _barriers[_offset]};
+			D3D12_RESOURCE_BARRIER& barrier{ _barriers[_offset]};
 			barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
 			barrier.Flags = flags;
 			barrier.Transition.pResource = resource;
@@ -119,7 +119,7 @@ namespace primal::graphics::d3d12::d3dx
 		{
 			assert(resource);
 			assert(_offset < max_resource_barriers);
-			D3D12_RESOURCE_BARRIER barrier{ _barriers[_offset] };
+			D3D12_RESOURCE_BARRIER& barrier{ _barriers[_offset] };
 			barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
 			barrier.Flags = flags;
 			barrier.UAV.pResource = resource;
@@ -133,7 +133,7 @@ namespace primal::graphics::d3d12::d3dx
 		{
 			assert(resource_before && resource_after);
 			assert(_offset < max_resource_barriers);
-			D3D12_RESOURCE_BARRIER barrier{ _barriers[_offset] };
+			D3D12_RESOURCE_BARRIER& barrier{ _barriers[_offset] };
 			barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_ALIASING;
 			barrier.Flags = flags;
 			barrier.Aliasing.pResourceBefore = resource_before;

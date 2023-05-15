@@ -81,11 +81,14 @@ namespace primal::graphics::d3d12::core
 				DXCall(_cmd_list->Reset(frame.cmd_allocator, nullptr));
 			}
 
-			void end_frame()
+			void end_frame(const d3d12_surface& surface)
 			{
 				DXCall(_cmd_list->Close());
 				ID3D12CommandList* const cmd_lists[]{ _cmd_list };
 				_cmd_queue->ExecuteCommandLists(_countof(cmd_lists), &cmd_lists[0]);
+
+				// Presenting swap chain buffers happens in lockstep with frame buffers.
+				surface.present();
 
 				u64& fence_value{ _fence_value };
 				++fence_value;
@@ -486,6 +489,8 @@ namespace primal::graphics::d3d12::core
 		gpass::set_size({ frame_info.surface_width, frame_info.surface_height });
 		d3dx::d3d12_resource_barrier& barriers{ resource_barriers };
 
+		// Presenting swap chain buffers happens in lockstep with frame buffers.
+		//surface.present();
 
 		// Record commands
 		cmd_list->RSSetViewports(1, &surface.viewport());
@@ -516,12 +521,9 @@ namespace primal::graphics::d3d12::core
 			D3D12_RESOURCE_STATE_RENDER_TARGET,
 			D3D12_RESOURCE_STATE_PRESENT);
 
-		// Presenting swap chain buffers happens in lockstep with frame buffers.
-		surface.present();
-
 		// done recording commands. now execute commands,
 		// signal and icrement the fence value for the next frame.
-		gfx_command.end_frame();
+		gfx_command.end_frame(surface);
 	}
 }
 

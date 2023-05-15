@@ -28,7 +28,7 @@ namespace primal::graphics::d3d12::gpass
 		{
 			assert(size.x && size.y);
 			gpass_main_buffer.release();
-			gpass_depth_buffer.resource();
+			gpass_depth_buffer.release();
 
 			D3D12_RESOURCE_DESC desc{};
 			desc.Alignment = 0; // note: 0 is the smae as 64kb (or 4mb for msaa)
@@ -106,7 +106,7 @@ namespace primal::graphics::d3d12::gpass
 			stream.render_target_formats = rtf_array;
 
 			gpass_pso = d3dx::create_pipeline_state(&stream, sizeof(stream));
-			NAME_D3D12_OBJECT(gpass_pso, L"GPass Pso Signature");
+			NAME_D3D12_OBJECT(gpass_pso, L"GPass Pipeline State Object");
 
 			return gpass_root_sig && gpass_pso;
 		}
