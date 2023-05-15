@@ -23,3 +23,7 @@ Geometry 데이터 저장 방식에 대해 추가 공부 필요
 - header include 순서 체크
 - pointer, reference 인자값 전달 체크
 - nullptr 문제의 경우 return을 빼먹었는지 or &, *을 안썼는지
+   
+Issue   
+SetGraphicsRoot32Constants로 shader에 Constant 전달이 안된다.......
+이유는 모름..
