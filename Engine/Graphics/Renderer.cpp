@@ -37,7 +37,7 @@ namespace primal::graphics
 	}
 	void shutdown()
 	{
-		gfx.shutdown();
+		if (gfx.platform != (graphics_platform)-1) gfx.shutdown();
 	}
 
 	//void render()

@@ -2,6 +2,7 @@
 #include "D3D12Surface.h"
 #include "D3D12Shaders.h"
 #include "D3D12GPass.h"
+#include "D3D12PostProcess.h"
 
 using namespace Microsoft::WRL;
 
@@ -321,7 +322,7 @@ namespace primal::graphics::d3d12::core
 		new (&gfx_command) d3d12_command(main_device, D3D12_COMMAND_LIST_TYPE_DIRECT);
 		if (!gfx_command.command_queue()) return failed_init();
 
-		if (!(shaders::initialize() && gpass::initialize()))
+		if (!(shaders::initialize() && gpass::initialize() && fx::initialize()))
 			return failed_init();
 
 		NAME_D3D12_OBJECT(main_device, L"Main D3D12 Device");
@@ -345,7 +346,8 @@ namespace primal::graphics::d3d12::core
 			process_deferred_releases(i);
 		}
 
-		// shutdown modules
+		// shutdown modules (release는 initialize의 역순)
+		fx::shutdown();
 		gpass::shutdown();
 		shaders::shutdown();
 
@@ -489,12 +491,13 @@ namespace primal::graphics::d3d12::core
 		gpass::set_size({ frame_info.surface_width, frame_info.surface_height });
 		d3dx::d3d12_resource_barrier& barriers{ resource_barriers };
 
-		// Presenting swap chain buffers happens in lockstep with frame buffers.
-		//surface.present();
-
 		// Record commands
+		ID3D12DescriptorHeap* const heaps[]{ srv_desc_heap.heap() };
+		cmd_list->SetDescriptorHeaps(1, &heaps[0]);
+
 		cmd_list->RSSetViewports(1, &surface.viewport());
 		cmd_list->RSSetScissorRects(1, &surface.scissor_rect());
+
 		// depth prepass
 		gpass::add_transitions_for_depth_prepass(barriers);
 		barriers.apply(cmd_list);
@@ -514,7 +517,9 @@ namespace primal::graphics::d3d12::core
 		// post-process
 		gpass::add_transitions_for_post_prepass(barriers);
 		barriers.apply(cmd_list);
-		// 현재 백버퍼에 대해 작성, 백버퍼는 렌더 타겟
+
+		// 현재 백버퍼에 대해 작성할 것, 백버퍼는 렌더 타겟
+		fx::post_process(cmd_list, surface.rtv());
 
 		// after-post process
 		d3dx::transition_resource(cmd_list, current_back_buffer,

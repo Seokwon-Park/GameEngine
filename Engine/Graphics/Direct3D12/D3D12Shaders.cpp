@@ -16,7 +16,7 @@ namespace primal::graphics::d3d12::shaders
 
 		// This is a chunk of memory that contains all compiled engine shaders.
 		// The blob is an array of shader byte code consisting of a u64 size and
-		// an array of bytes
+		// an array of bytes.
 		std::unique_ptr<u8[]> shaders_blob{};
 		
 		bool load_engine_shaders()
@@ -56,6 +56,7 @@ namespace primal::graphics::d3d12::shaders
 		{
 			engine_shaders[i] = {};
 		}
+		shaders_blob.reset();
 	}
 
 	D3D12_SHADER_BYTECODE get_engine_shader(engine_shader::id id)
