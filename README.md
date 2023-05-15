@@ -16,3 +16,5 @@ Dependency 설정(유튜브 영상에도 나중에 설명나옴)
 
 ### 2023-05-05   
 Geometry 데이터 저장 방식에 대해 추가 공부 필요
+
+initialize와 release 맞게 했는지 체크
