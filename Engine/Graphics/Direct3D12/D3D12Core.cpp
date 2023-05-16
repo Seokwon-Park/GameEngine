@@ -130,9 +130,9 @@ namespace primal::graphics::d3d12::core
 				}
 			}
 
-			constexpr ID3D12CommandQueue* const command_queue() const { return _cmd_queue; }
-			constexpr id3d12_graphics_command_list* const command_list() const { return _cmd_list; }
-			constexpr u32 frame_index() const { return _frame_index; }
+			[[nodiscard]] constexpr ID3D12CommandQueue* const command_queue() const { return _cmd_queue; }
+			[[nodiscard]] constexpr id3d12_graphics_command_list* const command_list() const { return _cmd_list; }
+			[[nodiscard]] constexpr u32 frame_index() const { return _frame_index; }
 
 		private:
 			struct command_frame
@@ -287,6 +287,10 @@ namespace primal::graphics::d3d12::core
 			if (SUCCEEDED(D3D12GetDebugInterface(IID_PPV_ARGS(&debug_interface))))
 			{
 				debug_interface->EnableDebugLayer();
+#if 0
+#pragma message("WARNING: GPU_based validation is enabled. This will considerably slow down the renderer!")
+				debug_interface->SetEnableGPUBasedValidation(1);
+#endif
 			}
 			else
 			{
@@ -499,6 +503,10 @@ namespace primal::graphics::d3d12::core
 		cmd_list->RSSetScissorRects(1, &surface.scissor_rect());
 
 		// depth prepass
+		barriers.add(current_back_buffer,
+			D3D12_RESOURCE_STATE_PRESENT,
+			D3D12_RESOURCE_STATE_RENDER_TARGET,
+			D3D12_RESOURCE_BARRIER_FLAG_BEGIN_ONLY);
 		gpass::add_transitions_for_depth_prepass(barriers);
 		barriers.apply(cmd_list);
 		gpass::set_render_targets_for_depth_prepass(cmd_list);
@@ -510,15 +518,15 @@ namespace primal::graphics::d3d12::core
 		gpass::set_render_targets_for_gpass(cmd_list);
 		gpass::render(cmd_list, frame_info);
 
-		d3dx::transition_resource(cmd_list, current_back_buffer,
-			D3D12_RESOURCE_STATE_PRESENT,
-			D3D12_RESOURCE_STATE_RENDER_TARGET);
-
 		// post-process
-		gpass::add_transitions_for_post_prepass(barriers);
+		barriers.add(current_back_buffer,
+			D3D12_RESOURCE_STATE_PRESENT,
+			D3D12_RESOURCE_STATE_RENDER_TARGET,
+			D3D12_RESOURCE_BARRIER_FLAG_END_ONLY);
+		gpass::add_transitions_for_post_process(barriers);
 		barriers.apply(cmd_list);
 
-		// 현재 백버퍼에 대해 작성할 것, 백버퍼는 렌더 타겟
+		// 현재 백버퍼에 대해 작성할 것, 백버퍼를 렌더 타겟으로
 		fx::post_process(cmd_list, surface.rtv());
 
 		// after-post process

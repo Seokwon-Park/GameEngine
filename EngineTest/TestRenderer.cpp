@@ -43,6 +43,7 @@ using namespace primal;
 graphics::render_surface _surfaces[4];
 time_it timer{};
 
+bool resized{ false };
 bool is_restarting{ false };
 void destroy_render_surface(graphics::render_surface& surface);
 bool test_initialize();
@@ -53,6 +54,7 @@ LRESULT win_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 {
 	//function(1234); // T = int
 	//function(&hwnd); // T = pointer to hwnd (a pointer is also an iterator category, it's a type of iterator)
+	bool toggle_fullscreen{ false };
 
 	switch (msg)
 	{
@@ -80,16 +82,13 @@ LRESULT win_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 		}
 	}
 	break;
+	case WM_SIZE:
+		resized = (wparam != SIZE_MINIMIZED);
+		break;
 	//사용자가 alt를 누른상태에서 문자키를 눌렀을때
 	case WM_SYSCHAR:
-		if (wparam == VK_RETURN && (HIWORD(lparam) & KF_ALTDOWN))
-		{
-			platform::window win{ platform::window_id{(id::id_type)GetWindowLongPtr(hwnd, GWLP_USERDATA)} };
-			win.set_fullscreen(!win.is_fullscreen());
-			return 0;
-		}
-		break;
-
+		toggle_fullscreen = (wparam == VK_RETURN && (HIWORD(lparam) & KF_ALTDOWN));
+		break;		
 	case WM_KEYDOWN:
 		if (wparam == VK_ESCAPE)
 		{
@@ -101,6 +100,31 @@ LRESULT win_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 			is_restarting = true;
 			test_shutdown();
 			test_initialize();
+		}
+	}
+
+	if ((resized && GetAsyncKeyState(VK_LBUTTON) >= 0) || toggle_fullscreen)
+	{
+		platform::window win{ platform::window_id{(id::id_type)GetWindowLongPtr(hwnd, GWLP_USERDATA)} };
+		for (u32 i{ 0 }; i < _countof(_surfaces); ++i)
+		{
+			if (win.get_id() == _surfaces[i].window.get_id())
+			{
+				if (toggle_fullscreen)
+				{
+					win.set_fullscreen(!win.is_fullscreen());
+					// The default window procedure will play a system notification sound
+					// when pressing the Alt Enter keyboard combination if wm_syschar is not handed.
+					// by returning 0 we can tell the system that we handled this message.
+					return 0;
+				}
+				else
+				{
+					_surfaces[i].surface.resize(win.width(), win.height());
+					resized = false;
+				}
+				break;
+			}
 		}
 	}
 
@@ -168,7 +192,7 @@ engine_test::initialize()
 void engine_test::run() 
 {
 	timer.begin();
-	std::this_thread::sleep_for(std::chrono::milliseconds(10));
+	//std::this_thread::sleep_for(std::chrono::milliseconds(10));
 	for (u32 i{ 0 }; i < _countof(_surfaces); ++i)
 	{
 		if (_surfaces[i].surface.is_valid())
