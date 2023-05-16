@@ -66,7 +66,7 @@ namespace primal::graphics::d3d12::fx
 			NAME_D3D12_OBJECT(fx_pso, L"Post-proecess FX Pipeline State Object");
 
 			return fx_root_sig && fx_pso;
-			return true;
+			// return true;
 		}
 
 	}

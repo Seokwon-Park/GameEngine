@@ -35,7 +35,7 @@ namespace primal::utl
 		// need to delete const?
 		// Move-constructor. Constructs by copying another vector. 
 		// The original vector will be empty after move.
-		constexpr vector(const vector&& o)
+		constexpr vector(vector&& o)
 			:_capacity{ o._capacity }, _size{ o._size }, _data{ o._data }
 		{
 			o.reset();
@@ -63,7 +63,7 @@ namespace primal::utl
 		
 		// Move-assignment operator. Frees all resources in this vector and
 		// moves the other vector into this one.
-		constexpr vector& operator=(const vector&& o)
+		constexpr vector& operator=(vector&& o)
 		{
 			assert(this != std::addressof(o));
 			if (this != std::addressof(o))
@@ -196,7 +196,7 @@ namespace primal::utl
 			--_size;
 			if (item < std::addressof(_data[_size]))
 			{
-				memcpy(item, item + 1, (std::addressof(_data[size]) - item) * sizeof(T));
+				memcpy(item, item + 1, (std::addressof(_data[_size]) - item) * sizeof(T));
 			}
 
 			return item;
