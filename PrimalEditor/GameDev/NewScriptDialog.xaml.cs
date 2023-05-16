@@ -7,6 +7,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection.Metadata;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -62,8 +63,9 @@ private:
 
         private static string GetNamespaceFromeProjectName()
         {
-            var projectName = Project.Current.Name;
-            projectName = projectName.Replace(' ', '_');
+            var projectName = Project.Current.Name.Trim();
+            if (string.IsNullOrEmpty(projectName)) return string.Empty;
+            projectName = Regex.Replace(projectName, @"[^A-za-z0-9_]", "");
             return projectName;
         }
 
@@ -73,12 +75,13 @@ private:
             var name = scriptName.Text.Trim();
             var path = scriptPath.Text.Trim();
             string errorMsg = string.Empty;
+            var nameRegex = new Regex(@"^[A-Za-z_][A-za-z0-9_]*$");
+
             if (string.IsNullOrEmpty(name))//비어있는 경우
             {
                 errorMsg = "Type in a script name.";
             }
-            //유효하지 않는 문자나 공백을 포함하면 안된다.
-            else if (name.IndexOfAny(Path.GetInvalidFileNameChars()) != -1 || name.Any(x => char.IsWhiteSpace(x)))
+            else if (!nameRegex.IsMatch(name))
             {
                 errorMsg = "Invalid character(s) used in script name.";
             }

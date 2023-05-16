@@ -20,7 +20,10 @@ namespace PrimalEditor.GameProject
     /// </summary>
     public partial class ProjectBrowserDialog : Window
     {
-        private readonly CubicEase _easing = new CubicEase() {EasingMode = EasingMode.EaseInOut };
+        private readonly CubicEase _easing = new CubicEase() { EasingMode = EasingMode.EaseInOut };
+
+        public static bool GotoNewProejctTab { get; set; }
+
         public ProjectBrowserDialog()
         {
             InitializeComponent();
@@ -30,13 +33,17 @@ namespace PrimalEditor.GameProject
         private void OnProjectBrowserDialogLoaded(object sender, RoutedEventArgs e)
         {
             Loaded -= OnProjectBrowserDialogLoaded;
-            if (!OpenProject.Projects.Any())
+            if (!OpenProject.Projects.Any() || GotoNewProejctTab)
             {
-                openProjectButton.IsEnabled = false;
-                openProjectView.Visibility = Visibility.Hidden;
-                OnToggleButton_Click(createProjectButton, new RoutedEventArgs());
+                if (!GotoNewProejctTab)
+                {
+                    openProjectButton.IsEnabled = false;
+                    openProjectView.Visibility = Visibility.Hidden;
 
+                }
+                OnToggleButton_Click(createProjectButton, new RoutedEventArgs());
             }
+            GotoNewProejctTab = false;
         }
 
         private void AnimateToCreateProject()
@@ -75,7 +82,7 @@ namespace PrimalEditor.GameProject
                     AnimateToOpenProject();
                     openProjectView.IsEnabled = true;
                     newProjectView.IsEnabled = false;
-     
+
                 }
                 openProjectButton.IsChecked = true;
             }
