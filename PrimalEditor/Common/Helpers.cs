@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
@@ -28,7 +29,7 @@ namespace PrimalEditor
             return null;
         }
     }
-   
+
     public static class ContentHelper
     {
         public static string GetRandomString(int length = 8)
@@ -36,23 +37,34 @@ namespace PrimalEditor
             if (length <= 0) length = 8;
             var n = length / 11;
             var sb = new StringBuilder();
-            for(int i = 0; i<=n; ++i)
+            for (int i = 0; i <= n; ++i)
             {
                 sb.Append(Path.GetRandomFileName().Replace(".", ""));
             }
- 
+
             return sb.ToString(0, length);
         }
 
+        public static bool IsDirectory(string path)
+        {
+            try
+            {
+                return File.GetAttributes(path).HasFlag(FileAttributes.Directory);
+            }
+            catch (Exception ex) { Debug.WriteLine(ex.Message); }
+            return false;
+        }
+
+        public static bool IsOlder(this DateTime date, DateTime other) => date < other;
         public static string SanitizeFileName(string name)
         {
             var path = new StringBuilder(name.Substring(0, name.LastIndexOf(Path.DirectorySeparatorChar) + 1));
             var file = new StringBuilder(name[(name.LastIndexOf(Path.DirectorySeparatorChar) + 1)..]);
-            foreach(var c in Path.GetInvalidPathChars())
+            foreach (var c in Path.GetInvalidPathChars())
             {
                 path.Replace(c, '_');
             }
-            foreach(var c in Path.GetInvalidFileNameChars())
+            foreach (var c in Path.GetInvalidFileNameChars())
             {
                 file.Replace(c, '_');
             }
@@ -61,7 +73,7 @@ namespace PrimalEditor
 
         public static byte[] ComputeHash(byte[] data, int offset = 0, int count = 0)
         {
-            if(data?.Length >0)
+            if (data?.Length > 0)
             {
                 using var sha256 = SHA256.Create();
                 return sha256.ComputeHash(data, offset, count > 0 ? count : data.Length);

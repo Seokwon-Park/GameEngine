@@ -65,7 +65,6 @@ private:
         {
             var projectName = Project.Current.Name.Trim();
             if (string.IsNullOrEmpty(projectName)) return string.Empty;
-            projectName = Regex.Replace(projectName, @"[^A-za-z0-9_]", "");
             return projectName;
         }
 
@@ -75,7 +74,8 @@ private:
             var name = scriptName.Text.Trim();
             var path = scriptPath.Text.Trim();
             string errorMsg = string.Empty;
-            var nameRegex = new Regex(@"^[A-Za-z_][A-za-z0-9_]*$");
+            //Script name can't start with number
+            var nameRegex = new Regex(@"^[A-Za-z_][A-Za-z0-9_]*$");
 
             if (string.IsNullOrEmpty(name))//비어있는 경우
             {
@@ -186,13 +186,7 @@ private:
 
             string[] files = new string[] { cpp, h };
 
-            //3번 정도 시도
-            for (int i = 0; i < 3; i++)
-            {
-                //비주얼 스튜디오가 바쁜경우 실패할 경우
-                if (!VisualStudio.AddFilesToSolution(solution, projectName, files)) System.Threading.Thread.Sleep(1000);
-                else break;
-            }
+            VisualStudio.AddFilesToSolution(solution, projectName, files);
         }
         public NewScriptDialog()
         {
