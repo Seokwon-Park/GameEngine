@@ -100,8 +100,6 @@ namespace PrimalEditor.Content
             }
         }
 
-
-
         protected void WriteAssetFileHeader(BinaryWriter writer)
         {
             var id = Guid.ToByteArray();

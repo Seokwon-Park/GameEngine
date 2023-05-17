@@ -125,6 +125,10 @@ namespace PrimalEditor.Content
             _contentWatcher.EnableRaisingEvents = true;
         }
 
+        public static AssetInfo GetAssetInfo(string file)=>_assetDictionary.ContainsKey(file) ? _assetDictionary[file] : null;
+
+        public static AssetInfo GetAssetInfo(Guid guid) => _assets.FirstOrDefault(x => x.Guid == guid);
+
         static AssetRegistry()
         {
             _contentWatcher.Changed += OnContentModified;

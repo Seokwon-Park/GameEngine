@@ -49,6 +49,11 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Resource Include="Resources\ContentBrowser\FolderLarge.png" />
+    <Resource Include="Resources\ContentBrowser\FolderSmall.png" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Resource Include="Resources\PrimitiveMeshView\Checkmap.png" />
     <Resource Include="Resources\PrimitiveMeshView\Earth.jpg" />
     <Resource Include="Resources\PrimitiveMeshView\Screenshot.png" />
