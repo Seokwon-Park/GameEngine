@@ -34,7 +34,7 @@ namespace PrimalEditor.Content
             DateModified = lastModified ?? info.LastWriteTime;
             Size = IsDirectory ? (long?)null : info.Length;
             Icon = icon;
-            IconSmall = IconSmall ?? smallIcon;
+            IconSmall = IconSmall ?? icon;
             FullPath = fullPath;
 
         }
