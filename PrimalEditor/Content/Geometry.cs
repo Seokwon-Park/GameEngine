@@ -1,4 +1,5 @@
-﻿using EnvDTE;
+﻿using PrimalEditor.DllWrappers;
+using PrimalEditor.GameProject;
 using PrimalEditor.Utilities;
 using System;
 using System.Collections.Generic;
@@ -263,6 +264,7 @@ namespace PrimalEditor.Content
     class Geometry : Asset
     {
         private readonly List<LODGroup> _lodGroups = new List<LODGroup>();
+        private readonly object _lock = new object();
 
         public GeometryImportSettings ImportSettings { get; } = new GeometryImportSettings ();
 
@@ -370,6 +372,47 @@ namespace PrimalEditor.Content
             lod.Meshes.Add(mesh);
         }
 
+        public override void Import(string file)
+        {
+            Debug.Assert(File.Exists(file));
+            Debug.Assert(!string.IsNullOrEmpty(FullPath));
+            var ext = Path.GetExtension(file).ToLower();
+
+            SourcePath = file;
+
+            try
+            {
+                if(ext == ".fbx")
+                {
+                    ImportFbx(file);
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine(ex.Message);
+                var msg = $"Failed to read {file} for import.";
+                Debug.WriteLine(msg);
+                Logger.Log(MessageType.Error, msg);
+            }
+        }
+
+        private void ImportFbx(string file)
+        {
+            Logger.Log(MessageType.Info, $"Importing FBX file {file}");
+            var tempPath = Application.Current.Dispatcher.Invoke(() => Project.Current.TempFolder);
+            if (string.IsNullOrEmpty(tempPath)) return;
+
+            lock(_lock)
+            {
+                if (!Directory.Exists(tempPath)) Directory.CreateDirectory(tempPath);
+            }
+
+            var tempFile = $"{tempPath}{ContentHelper.GetRandomString()}.fbx";
+            File.Copy(file, tempFile, true);
+            ContentToolsAPI.ImportFbx(tempFile, this);
+
+        }
+
         public override IEnumerable<string> Save(string file)
         {
             Debug.Assert(_lodGroups.Any());
@@ -457,6 +500,7 @@ namespace PrimalEditor.Content
         {
             var width = 90 * 4;
 
+            using var memStream = new MemoryStream();
             BitmapSource bmp = null;
             // NOTE: UI 요소(WPF Control)과 viewmodel을 혼합하는 것은 좋지 않다.
             //       예외를 둘 필요가 있다. 스크린샷에 사용할 수 있는 그래픽 렌더러가 없는 경우.
@@ -466,7 +510,7 @@ namespace PrimalEditor.Content
                 bmp = new TransformedBitmap(bmp, new ScaleTransform(0.25, 0.25, 0.5, 0.5));
             });
 
-            using var memStream = new MemoryStream();
+            
             memStream.SetLength(0);
 
             var encoder = new PngBitmapEncoder();

@@ -144,6 +144,7 @@ namespace PrimalEditor.Content
             DataContext = null;
             InitializeComponent();
             Loaded += OnContentBrowserLoaded;
+            AllowDrop= true;
         }
 
         private void OnContentBrowserLoaded(object sender, RoutedEventArgs e)
@@ -277,6 +278,20 @@ namespace PrimalEditor.Content
             }
         }
 
+        private void OnFolderContent_ListView_Drop(object sender, DragEventArgs e)
+        {
+            var vm = DataContext as ContentBrowser;
+            if (vm.SelectedFolder != null && e.Data.GetDataPresent(DataFormats.FileDrop))
+            {
+                var files = (string[])e.Data.GetData(DataFormats.FileDrop);
+                if (files?.Length > 0 && Directory.Exists(vm.SelectedFolder))
+                {
+                    _ = ContentHelper.ImportFilesAsync(files, vm.SelectedFolder);
+                    e.Handled = true;
+                }
+            }
+        }
+
         private void OnFolderContent_ListView_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             var item = folderListView.SelectedItem as ContentInfo;
@@ -289,6 +304,11 @@ namespace PrimalEditor.Content
             {
                 Application.Current.MainWindow.DataContextChanged -= OnProjectChanged;
             }
+
+            (DataContext as ContentBrowser)?.Dispose();
+            DataContext = null;
         }
+
+        
     }
 }

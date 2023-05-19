@@ -29,10 +29,10 @@ namespace PrimalEditor.ContentToolsAPIStructs
 
             SmoothingAngle = settings.SmoothingAngle;
             CalculateNormals = ToByte(settings.CalculateNormals);
-            CalculateTangents= ToByte(settings.CalculateTangents);
+            CalculateTangents = ToByte(settings.CalculateTangents);
             ReverseHandedness = ToByte(settings.ReverseHandedness);
-            ImportEmbededTextures= ToByte(settings.ImportEmbeddedTextures);
-            ImportAnimations= ToByte(settings.ImportAnimations);
+            ImportEmbededTextures = ToByte(settings.ImportEmbeddedTextures);
+            ImportAnimations = ToByte(settings.ImportAnimations);
         }
     }
 
@@ -86,16 +86,14 @@ namespace PrimalEditor.DllWrappers
     {
         private const string _toolsDll = "ContentTools.dll";
 
-        [DllImport(_toolsDll)]
-        private static extern void CreatePrimitiveMesh([In, Out] SceneData data, PrimitiveInitInfo info);
-        public static void CreatePrimitiveMesh(Content.Geometry geometry, PrimitiveInitInfo info)
+        private static void GeometryFromSceneData(Content.Geometry geometry, Action<SceneData> sceneDataGenerator, string failureMessage)
         {
             Debug.Assert(geometry != null);
             using var sceneData = new SceneData();
             try
             {
                 sceneData.ImportSettings.FromContentSettings(geometry);
-                CreatePrimitiveMesh(sceneData, info);
+                sceneDataGenerator(sceneData);
                 Debug.Assert(sceneData.Data != IntPtr.Zero && sceneData.DataSize > 0);
                 var data = new byte[sceneData.DataSize];
                 Marshal.Copy(sceneData.Data, data, 0, sceneData.DataSize);
@@ -103,9 +101,23 @@ namespace PrimalEditor.DllWrappers
             }
             catch (Exception ex)
             {
-                Logger.Log(MessageType.Error, $"failed to create {info.Type} primitive mesh.");
+                Logger.Log(MessageType.Error, failureMessage);
                 Debug.WriteLine(ex.Message);
             }
+        }
+
+        [DllImport(_toolsDll)]
+        private static extern void CreatePrimitiveMesh([In, Out] SceneData data, PrimitiveInitInfo info);
+        public static void CreatePrimitiveMesh(Content.Geometry geometry, PrimitiveInitInfo info)
+        {
+            GeometryFromSceneData(geometry, (sceneData) => CreatePrimitiveMesh(sceneData, info), $"Failed to create {info.Type} primitive mesh.");
+        }
+
+        [DllImport(_toolsDll)]
+        private static extern void ImportFbx(string file, [In, Out] SceneData data);
+        public static void ImportFbx(string file, Content.Geometry geometry)
+        {
+            GeometryFromSceneData(geometry, (sceneData) => ImportFbx(file, sceneData), $"failed to import from FBX file: {file}");
         }
     }
 }
