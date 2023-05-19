@@ -30,7 +30,7 @@ namespace primal::tools
 			ZeroMemory(this, sizeof(fbx_context));
 		}
 
-		void get_scene(FbxNode* root /*= nullptr*/);
+		void get_scene(FbxNode* root = nullptr);
 
 		constexpr bool is_valid() const { return _fbx_manager && _fbx_scene; }
 		constexpr f32 scene_scale() const { return _scene_scale; }
@@ -40,6 +40,7 @@ namespace primal::tools
 		void load_fbx_file(const char* file);
 		void get_mesh(FbxNode* node, utl::vector<mesh>& meshes);
 		void get_lod_group(FbxNode* node);
+		bool get_mesh_data(FbxMesh* fbx_mesh, mesh& m);
 
 		scene* _scene{ nullptr };
 		scene_data* _scene_data{ nullptr };

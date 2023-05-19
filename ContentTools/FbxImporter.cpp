@@ -16,6 +16,8 @@
 #pragma comment (lib, "C:\\Program Files\\Autodesk\\FBX\\FBX SDK\\2020.2\\lib\\vs2019\\x64\\release\\zlib-md.lib")
 #endif // _DEBUG
 
+// LNK4099 PDB not found warnings can be resolved either by installing FBX SDK PDBs (separate download) or
+// by disabling this warning in linker options (Linker command line: /ignore:4099).
 
 namespace primal::tools
 {
@@ -125,9 +127,166 @@ namespace primal::tools
 	}
 	void fbx_context::get_lod_group(FbxNode* node)
 	{
-	
+		assert(node);
+
+		if (FbxLODGroup * lod_grp{ node->GetLodGroup() })
+		{
+			lod_group lod{};
+			lod.name = (node->GetName()[0] != '\0') ? node->GetName() : lod_grp->GetName();
+			// NOTE: number of LODs is exclusive the base mesh (LOD 0)
+			const s32 num_lods{ lod_grp->GetNumThresholds() };
+			const s32 num_nodes{ node->GetChildCount() };
+			assert(num_lods > 0 && num_nodes > 0);
+
+			for (s32 i{ 0 }; i < num_nodes; ++i)
+			{
+				get_mesh(node->GetChild(i), lod.meshes);
+
+				if (lod.meshes.size() > 1 && lod.meshes.size() <= num_lods + 1 &&
+					lod.meshes.back().lod_threshold < 0.f)
+				{
+					FbxDistance threshold;
+					lod_grp->GetThreshold((u32)lod.meshes.size() - 2, threshold);
+					lod.meshes.back().lod_threshold = threshold.value() * _scene_scale;
+				}
+			}
+			if (lod.meshes.size()) _scene->lod_groups.emplace_back(lod);
+		}
 	}
 
+	bool fbx_context::get_mesh_data(FbxMesh* fbx_mesh, mesh& m)
+	{
+		assert(fbx_mesh);
+
+		const s32 num_polys{ fbx_mesh->GetPolygonCount() };
+		if (num_polys <= 0) return false;
+
+		// Get vertices
+		const s32 num_vertices{ fbx_mesh->GetControlPointsCount() };
+		FbxVector4* vertices{ fbx_mesh->GetControlPoints() };
+		const s32 num_indices{ fbx_mesh->GetPolygonVertexCount() };
+		s32* indices{ fbx_mesh->GetPolygonVertices() };
+
+		assert(num_vertices > 0 && vertices && num_indices > 0 && indices);
+		if(!(num_vertices > 0 && vertices && num_indices > 0 && indices)) return false;
+
+		m.raw_indices.resize(num_indices);
+		utl::vector vertex_ref(num_vertices, u32_invalid_id);
+
+		for (s32 i{ 0 }; i < num_indices; ++i)
+		{
+			const u32 v_idx{ (u32)indices[i] };
+			// 이 정점을 만난적이 있으면 그냥 이 정점의 index만 추가
+			// 아니라면 그 정점과 새로운 인덱스 추가
+			if (vertex_ref[v_idx] != u32_invalid_id)
+			{
+				m.raw_indices[i] = vertex_ref[v_idx];
+			}
+			else
+			{
+				FbxVector4 v = vertices[v_idx] * _scene_scale;
+				m.raw_indices[i] = (u32)m.positions.size();
+				vertex_ref[v_idx] = m.raw_indices[i];
+				m.positions.emplace_back((f32)v[0], (f32)v[1], (f32)v[2]);
+			}
+		}
+
+		assert(m.raw_indices.size() % 3 == 0);
+
+		//Get material index per polygon
+		assert(num_polys > 0);
+		FbxLayerElementArrayTemplate<s32>* mtl_indices;
+		if (fbx_mesh->GetMaterialIndices(&mtl_indices))
+		{
+			for (s32 i{ 0 }; i < num_polys; ++i)
+			{
+				const s32 mtl_index{ mtl_indices->GetAt(i) };
+				assert(mtl_index >= 0);
+				m.material_indices.emplace_back((u32)mtl_index);
+				if (std::find(m.material_used.begin(), m.material_used.end(), (u32)mtl_index) == m.material_used.end())
+				{
+					m.material_used.emplace_back((u32)mtl_index);
+				}
+			}
+		}
+
+		// Importing normals is ON by default
+		const bool import_normals{ !_scene_data->settings.calculate_normals };
+
+		// Importing tangents is OFF by default
+		const bool import_tangents{ !_scene_data->settings.calculate_tangents };
+
+		// Import normals
+		if (import_normals)
+		{
+			FbxArray<FbxVector4> normals;
+			// Calculate normals using FBX's built-in method, but only if no normal data is already there.
+			if (fbx_mesh->GenerateNormals() &&
+				fbx_mesh->GetPolygonVertexNormals(normals) && normals.Size() > 0)
+			{
+				const s32 num_normals{ normals.Size() };
+				for (s32 i{ 0 }; i < num_normals; ++i)
+				{
+					m.normals.emplace_back((f32)normals[i][0], (f32)normals[i][1], (f32)normals[i][2]);
+				}
+			}
+			else
+			{
+				// 만약 법선벡터를 불러오는데 실패했다면 법선벡터를 직접 계산한다.
+				// somrthing went wrong with importing normals from FBX.
+				// Fall back to our own normal calcuation method.
+				_scene_data->settings.calculate_normals = true;
+			}
+		}
+
+		if (import_tangents)
+		{
+			FbxLayerElementArrayTemplate<FbxVector4>* tangents{ nullptr };
+			// Calculate tangents using FBX's built-in method, but only if no tangent data is already there.
+			if (fbx_mesh->GenerateTangentsData() &&
+				fbx_mesh->GetTangents(&tangents) &&
+				tangents && tangents->GetCount() > 0)
+			{
+				const s32 num_tangent{ tangents->GetCount() };
+				for (s32 i{ 0 }; i < num_tangent; ++i)
+				{
+					FbxVector4 t{ tangents->GetAt(i) };
+					m.tangents.emplace_back((f32)t[0], (f32)t[1], (f32)t[2], (f32)t[3]);
+				}
+			}
+			else
+			{
+				// 만약 법선벡터를 불러오는데 실패했다면 접선벡터를 직접 계산한다.
+				// somrthing went wrong with importing normals from FBX.
+				// Fall back to our own normal calcuation method.
+				_scene_data->settings.calculate_tangents = true;
+			}
+		}
+
+		// Get UVs
+		FbxStringList uv_names;
+		fbx_mesh->GetUVSetNames(uv_names);
+		const s32 uv_set_count{ uv_names.GetCount() };
+		// NOTE: it's ok if we don't have a uv set. For example, some emissive objects don't need a uv map
+		m.uv_sets.resize(uv_set_count);
+
+		for (s32 i{ 0 }; i < uv_set_count; ++i)
+		{
+			FbxArray<FbxVector2> uvs;
+			if (fbx_mesh->GetPolygonVertexUVs(uv_names.GetStringAt(i), uvs))
+			{
+				const s32 num_uvs{ uvs.Size() };
+				for (s32 j{ 0 }; j < num_uvs; ++j)
+				{
+					m.uv_sets[i].emplace_back((f32)uvs[j][0], (f32)uvs[j][1]);
+				}
+			}
+		}
+
+		return true;
+	}
+
+	
 
 	EDITOR_INTERFACE void ImportFbx(const char* file, scene_data* data)
 	{
@@ -140,15 +299,16 @@ namespace primal::tools
 			fbx_context fbx_context{ file,&scene, data };
 			if (fbx_context.is_valid())
 			{
-
+				fbx_context.get_scene();
 			}
 			else
 			{
-
+				// TODO: send failure log message to editor
+				return;
 			}
 		}
 
 		process_scene(scene, data->settings);
 		pack_data(scene, *data);
 	}
-}
+}// namespace primal::tools

@@ -20,8 +20,11 @@ namespace primal::tools {
 	{
 		utl::vector<math::Vector3> positions;
 		utl::vector<math::Vector3> normals;
-		utl::vector<math::Vector3> tangents;
+		utl::vector<math::Vector4> tangents;
 		utl::vector<utl::vector<math::Vector2>> uv_sets;
+		utl::vector<u32> material_indices;
+		utl::vector<u32> material_used;
+
 
 		utl::vector<u32> raw_indices;
 
