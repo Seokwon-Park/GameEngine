@@ -110,7 +110,10 @@ namespace primal::tools {
 			}
 			return m;
 		}
+		//mesh create_cube(const primitive_init_info& info) 
+		//{
 
+		//}
 		mesh create_uv_sphere(const primitive_init_info& info)
 		{
 			const u32 phi_count{ clamp(info.segments[axis::x],3u,64u) };
@@ -258,7 +261,10 @@ namespace primal::tools {
 		//use 6 plane
 		void create_cube(scene& scene, const primitive_init_info& info)
 		{
-
+			//lod_group lod{};
+			//lod.name = "cube";
+			//lod.meshes.emplace_back(create_cube(info));
+			//scene.lod_groups.emplace_back(lod);
 		}
 		void create_uv_sphere(scene& scene, const primitive_init_info& info)
 		{

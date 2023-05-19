@@ -40,7 +40,7 @@ namespace primal::tools {
 	struct lod_group
 	{
 		std::string name;
-		std::vector<mesh> meshes;
+		utl::vector<mesh> meshes;
 	};
 
 	struct scene
