@@ -109,6 +109,15 @@ namespace PrimalEditor.Content
     {
         private string _sortedProperty = nameof(ContentInfo.FileName);
         private ListSortDirection _sortDirection;
+
+        public SelectionMode SelectionMode
+        {
+            get => (SelectionMode)GetValue(SelectionModeProperty);
+            set => SetValue(SelectionModeProperty, value);
+        }
+
+        public static readonly DependencyProperty SelectionModeProperty =
+            DependencyProperty.Register(nameof(SelectionMode), typeof(SelectionMode), typeof(ContentBrowserView), new PropertyMetadata(0));
         public ContentBrowserView()
         {
             DataContext = null;
