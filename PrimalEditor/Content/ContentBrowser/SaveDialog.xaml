@@ -13,14 +13,15 @@
             <RowDefinition/>
             <RowDefinition Height="auto"/>
         </Grid.RowDefinitions>
-        <local:ContentBrowserView x:Name="contentBrowserView"/>
+        <local:ContentBrowserView x:Name="contentBrowserView" SelectionMode="Single" FileAccess="Write"
+                                  MouseDoubleClick="OnContentBrowser_Mouse_DoubleClick"/>
 
         <Border Grid.Row="1" Background="{StaticResource Editor.Window.GrayBrush3}">
             <StackPanel>
                 <DockPanel Margin="10">
                     <TextBlock Text="File name:" Style="{StaticResource LightTextBlockStyle}"/>
                     <TextBox x:Name="fileNameTextBox"
-                             Text=""
+                             Text="{Binding Path=SelectedItem.FileName, ElementName=contentBrowserView, Mode=OneWay}"
                              Margin="5,0,0,0"/>
                 </DockPanel>
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="10,0,11,10">
