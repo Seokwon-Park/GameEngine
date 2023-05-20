@@ -91,6 +91,7 @@ namespace PrimalEditor
                 Debug.Assert(!string.IsNullOrEmpty(destination));
                 ContentWatcher.EnableFileWatcher(false);
                 var tasks = files.Select(async file => await Task.Run(() => { Import(file, destination); }));
+                await Task.WhenAll(tasks);
             }
             catch (Exception ex)
             {

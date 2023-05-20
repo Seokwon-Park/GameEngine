@@ -144,7 +144,7 @@ namespace PrimalEditor.Content
             DataContext = null;
             InitializeComponent();
             Loaded += OnContentBrowserLoaded;
-            AllowDrop= true;
+            AllowDrop = true;
         }
 
         private void OnContentBrowserLoaded(object sender, RoutedEventArgs e)
