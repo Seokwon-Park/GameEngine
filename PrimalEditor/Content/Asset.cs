@@ -63,6 +63,9 @@ namespace PrimalEditor.Content
 
         public abstract IEnumerable<string> Save(string File);
 
+        public abstract void Load(string file);
+
+
         private static AssetInfo GetAssetInfo(BinaryReader reader)
         {
             reader.BaseStream.Position = 0;
@@ -83,6 +86,9 @@ namespace PrimalEditor.Content
 
             return info;
         }
+
+        public  static AssetInfo TryGetAssetInfo(string file) =>
+            File.Exists(file) && Path.GetExtension(file) == AssetFileExtension ? AssetRegistry.GetAssetInfo(file) ?? GetAssetInfo(file) : null;
 
         public static AssetInfo GetAssetInfo(string file)
         {

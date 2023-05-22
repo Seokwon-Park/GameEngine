@@ -48,7 +48,6 @@
     </COMReference>
   </ItemGroup>
 
-
   <ItemGroup>
     <Resource Include="Resources\ContentBrowser\ListView.png" />
     <Resource Include="Resources\ContentBrowser\TileView.png" />
