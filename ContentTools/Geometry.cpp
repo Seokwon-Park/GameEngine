@@ -350,9 +350,10 @@ namespace primal::tools {
 					}
 					else
 					{
-
+						new_meshes.emplace_back(m);
 					}
 				}
+				new_meshes.swap(lod.meshes);
 			}
 		}
 	} // anonymous namespace

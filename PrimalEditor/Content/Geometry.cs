@@ -15,7 +15,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 
 namespace PrimalEditor.Content
-{ 
+{
     enum PrimitiveMeshType
     {
         //enum primitive_mesh_type : u32
@@ -100,7 +100,7 @@ namespace PrimalEditor.Content
         public byte[] Indices { get; set; }
     }
 
-    class MeshLOD: ViewModelBase
+    class MeshLOD : ViewModelBase
     {
         private string _name;
         public string Name
@@ -231,9 +231,9 @@ namespace PrimalEditor.Content
             get => _importAnimations;
             set
             {
-                if (_importAnimations!= value)
+                if (_importAnimations != value)
                 {
-                    _importAnimations= value;
+                    _importAnimations = value;
                     OnPropertyChanged(nameof(ImportAnimations));
                 }
             }
@@ -266,7 +266,7 @@ namespace PrimalEditor.Content
         private readonly List<LODGroup> _lodGroups = new List<LODGroup>();
         private readonly object _lock = new object();
 
-        public GeometryImportSettings ImportSettings { get; } = new GeometryImportSettings ();
+        public GeometryImportSettings ImportSettings { get; } = new GeometryImportSettings();
 
         public LODGroup GetLODGroup(int lodGroup = 0)
         {
@@ -288,12 +288,12 @@ namespace PrimalEditor.Content
             var numLODGroups = reader.ReadInt32();
             Debug.Assert(numLODGroups > 0);
 
-            for(int i = 0; i< numLODGroups; ++i)
+            for (int i = 0; i < numLODGroups; ++i)
             {
                 //get LOD group's name
                 s = reader.ReadInt32();
                 string lodGroupName;
-                if(s > 0)
+                if (s > 0)
                 {
                     var nameBytes = reader.ReadBytes(s);
                     lodGroupName = Encoding.UTF8.GetString(nameBytes);
@@ -304,7 +304,7 @@ namespace PrimalEditor.Content
                 }
 
                 // get number of meshes in this LOD group
-                var numMeshes = reader.ReadInt32(); 
+                var numMeshes = reader.ReadInt32();
                 Debug.Assert(numMeshes > 0);
                 List<MeshLOD> lods = ReadMeshLODs(numMeshes, reader);
 
@@ -319,9 +319,9 @@ namespace PrimalEditor.Content
         {
             var lodIds = new List<int>();
             var lodList = new List<MeshLOD>();
-            for(int i =0; i< numMeshes; ++i)
+            for (int i = 0; i < numMeshes; ++i)
             {
-                ReadMeshes(reader,lodIds, lodList);
+                ReadMeshes(reader, lodIds, lodList);
             }
 
             return lodList;
@@ -332,7 +332,7 @@ namespace PrimalEditor.Content
             //get mesh's name
             var s = reader.ReadInt32();
             string meshName;
-            if(s>0)
+            if (s > 0)
             {
                 var nameBytes = reader.ReadBytes(s);
                 meshName = Encoding.UTF8.GetString(nameBytes);
@@ -347,7 +347,7 @@ namespace PrimalEditor.Content
             var lodId = reader.ReadInt32();
             mesh.VertexSize = reader.ReadInt32();
             mesh.VertexCount = reader.ReadInt32();
-            mesh.IndexSize= reader.ReadInt32();
+            mesh.IndexSize = reader.ReadInt32();
             mesh.IndexCount = reader.ReadInt32();
             var lodThreshold = reader.ReadSingle();
 
@@ -358,10 +358,10 @@ namespace PrimalEditor.Content
             mesh.Indices = reader.ReadBytes(indexBufferSize);
 
             MeshLOD lod;
-            if(ID.IsValid(lodId) && lodIds.Contains(lodId))
+            if (ID.IsValid(lodId) && lodIds.Contains(lodId))
             {
                 lod = lodList[lodIds.IndexOf(lodId)];
-                Debug.Assert(lod != null);                   
+                Debug.Assert(lod != null);
             }
             else
             {
@@ -382,7 +382,7 @@ namespace PrimalEditor.Content
 
             try
             {
-                if(ext == ".fbx")
+                if (ext == ".fbx")
                 {
                     ImportFbx(file);
                 }
@@ -402,7 +402,7 @@ namespace PrimalEditor.Content
             var tempPath = Application.Current.Dispatcher.Invoke(() => Project.Current.TempFolder);
             if (string.IsNullOrEmpty(tempPath)) return;
 
-            lock(_lock)
+            lock (_lock)
             {
                 if (!Directory.Exists(tempPath)) Directory.CreateDirectory(tempPath);
             }
@@ -417,20 +417,20 @@ namespace PrimalEditor.Content
         {
             Debug.Assert(_lodGroups.Any());
             var savedFiles = new List<string>();
-            if(!_lodGroups.Any()) return savedFiles;
+            if (!_lodGroups.Any()) return savedFiles;
 
             var path = Path.GetDirectoryName(file) + Path.DirectorySeparatorChar;
             var fileName = Path.GetFileNameWithoutExtension(file);
 
             try
             {
-                foreach(var lodGroup in _lodGroups)
+                foreach (var lodGroup in _lodGroups)
                 {
                     Debug.Assert(lodGroup.LODs.Any());
                     // Use the name of most detailed LOD for file name
-                    var meshFileName =ContentHelper.SanitizeFileName(_lodGroups.Count>1?
-                        path + fileName + "_" + lodGroup.LODs[0].Name + AssetFileExtension:
-                        path+fileName+AssetFileExtension);
+                    var meshFileName = ContentHelper.SanitizeFileName(_lodGroups.Count > 1 ?
+                        path + fileName + "_" + lodGroup.LODs[0].Name + AssetFileExtension :
+                        path + fileName + AssetFileExtension);
                     // NOTE: we have to make a diff id for each new asset file.
                     Guid = Guid.NewGuid();
                     byte[] data = null;
@@ -439,7 +439,7 @@ namespace PrimalEditor.Content
                         writer.Write(lodGroup.Name);
                         writer.Write(lodGroup.LODs.Count);
                         var hashes = new List<byte>();
-                        foreach(var lod in lodGroup.LODs)
+                        foreach (var lod in lodGroup.LODs)
                         {
                             LODToBinary(lod, writer, out var hash);
                             hashes.AddRange(hash);
@@ -452,7 +452,7 @@ namespace PrimalEditor.Content
 
                     Debug.Assert(data?.Length > 0);
 
-                    using(var writer = new BinaryWriter(File.Open(meshFileName, FileMode.Create, FileAccess.Write)))
+                    using (var writer = new BinaryWriter(File.Open(meshFileName, FileMode.Create, FileAccess.Write)))
                     {
                         WriteAssetFileHeader(writer);
                         ImportSettings.ToBinary(writer);
@@ -480,7 +480,7 @@ namespace PrimalEditor.Content
 
             var meshDataBegin = writer.BaseStream.Position;
 
-            foreach(var mesh in lod.Meshes)
+            foreach (var mesh in lod.Meshes)
             {
                 writer.Write(mesh.VertexSize);
                 writer.Write(mesh.VertexCount);
@@ -498,7 +498,7 @@ namespace PrimalEditor.Content
 
         private byte[] GenerateIcon(MeshLOD lod)
         {
-            var width = 90 * 4;
+            var width = ContentInfo.IconWidth * 4;
 
             using var memStream = new MemoryStream();
             BitmapSource bmp = null;
@@ -508,14 +508,13 @@ namespace PrimalEditor.Content
             {
                 bmp = Editors.GeometryView.RenderToBitmap(new Editors.MeshRenderer(lod, null), width, width);
                 bmp = new TransformedBitmap(bmp, new ScaleTransform(0.25, 0.25, 0.5, 0.5));
+
+                memStream.SetLength(0);
+
+                var encoder = new PngBitmapEncoder();
+                encoder.Frames.Add(BitmapFrame.Create(bmp));
+                encoder.Save(memStream);
             });
-
-            
-            memStream.SetLength(0);
-
-            var encoder = new PngBitmapEncoder();
-            encoder.Frames.Add(BitmapFrame.Create(bmp));
-            encoder.Save(memStream);
 
             return memStream.ToArray();
         }

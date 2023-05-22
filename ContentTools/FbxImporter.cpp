@@ -291,15 +291,13 @@ namespace primal::tools
 
 		return true;
 	}
-
 	
-
 	EDITOR_INTERFACE void ImportFbx(const char* file, scene_data* data)
 	{
 		assert(file && data);
 		scene scene{};
 
-		// NOTE: anythong that involves using the FBX SDK should be single-threaded
+		// NOTE: anything that involves using the FBX SDK should be single-threaded
 		{
 			std::lock_guard lock{ fbx_mutex };
 			fbx_context fbx_context{ file,&scene, data };
