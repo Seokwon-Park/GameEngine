@@ -27,7 +27,7 @@ namespace PrimalEditor.Editors
         private bool _capturedLeft;
         private bool _capturedRight;
 
-        private void SetGeometry(int index = -1)
+        public void SetGeometry(int index = -1)
         {
             if (!(DataContext is MeshRenderer vm)) return;
 

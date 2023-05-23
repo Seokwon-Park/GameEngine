@@ -27,6 +27,7 @@
     <Page Remove="bin\**" />
   </ItemGroup>
 
+
   <ItemGroup>
     <COMReference Include="EnvDTE">
       <WrapperTool>tlbimp</WrapperTool>
@@ -47,6 +48,7 @@
       <EmbedInteropTypes>true</EmbedInteropTypes>
     </COMReference>
   </ItemGroup>
+
 
   <ItemGroup>
     <Resource Include="Resources\ContentBrowser\ListView.png" />

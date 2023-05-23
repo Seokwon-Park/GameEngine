@@ -19,6 +19,35 @@ namespace PrimalEditor.Editors
     //		 this class and the WPF viewer will become obsolete.
     class MeshRendererVertexData : ViewModelBase
     {
+        private bool _isHighlighted;
+        public bool IsHighlighted
+        {
+            get => _isHighlighted;
+            set
+            {
+                if (_isHighlighted != value)
+                {
+                    _isHighlighted = value;
+                    OnPropertyChanged(nameof(IsHighlighted));
+                    OnPropertyChanged(nameof(Diffuse));
+                }
+            }
+        }
+
+        private bool _isIsolated;
+        public bool IsIsolated
+        {
+            get => _isIsolated;
+            set
+            {
+                if (_isIsolated != value)
+                {
+                    _isIsolated = value;
+                    OnPropertyChanged(nameof(IsIsolated));
+                }
+            }
+        }
+
         private Brush _specular = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#ff111111"));
         public Brush Specular
         {
@@ -36,7 +65,7 @@ namespace PrimalEditor.Editors
         private Brush _diffuse = Brushes.White;
         public Brush Diffuse
         {
-            get => _diffuse;
+            get => _isHighlighted ? Brushes.Orange : _diffuse;
             set
             {
                 if (_diffuse != value)
@@ -46,6 +75,7 @@ namespace PrimalEditor.Editors
                 }
             }
         }
+        public string Name { get; set; }
         public Point3DCollection Positions { get; } = new Point3DCollection();
         public Vector3DCollection Normals { get; } = new Vector3DCollection();
         public PointCollection UVs { get; } = new PointCollection();
@@ -182,7 +212,7 @@ namespace PrimalEditor.Editors
 
             foreach (var mesh in lod.Meshes)
             {
-                var vertexData = new MeshRendererVertexData();
+                var vertexData = new MeshRendererVertexData() { Name = mesh.Name };
 
                 using (var reader = new BinaryReader(new MemoryStream(mesh.Vertices)))
                 {
@@ -237,10 +267,24 @@ namespace PrimalEditor.Editors
                     Meshes.Add(vertexData);
                 }
             }
+
+            // set caemera target and position
             if(old!=null)
             {
                 CameraTarget = old.CameraTarget;
                 CameraPosition = old.CameraPosition;
+
+                // NOTE: this is only for primitive meshes with multiple LODs,
+                //       because tehy're displayed with textures:
+                foreach(var mesh in old.Meshes)
+                {
+                    mesh.IsHighlighted = false;
+                }
+
+                foreach(var mesh in Meshes)
+                {
+                    mesh.Diffuse = old.Meshes.First().Diffuse;
+                }
             }
             else
             {

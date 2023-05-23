@@ -97,6 +97,20 @@ namespace PrimalEditor.Content
             }
         }
 
+        private string _name;
+        public string Name
+        {
+            get => _name;
+            set
+            {
+                if (_name != value)
+                {
+                    _name = value;
+                    OnPropertyChanged(nameof(Name));
+                }
+            }
+        }
+
         public byte[] Vertices { get; set; }
         public byte[] Indices { get; set; }
     }
@@ -353,7 +367,7 @@ namespace PrimalEditor.Content
                 meshName = $"mesh_{ContentHelper.GetRandomString()}";
             }
 
-            var mesh = new Mesh();
+            var mesh = new Mesh() { Name = meshName };
 
             var lodId = reader.ReadInt32();
             mesh.VertexSize = reader.ReadInt32();
@@ -480,9 +494,8 @@ namespace PrimalEditor.Content
                 {
                     Debug.Assert(lodGroup.LODs.Any());
                     // Use the name of most detailed LOD for file name
-                    var meshFileName = ContentHelper.SanitizeFileName(_lodGroups.Count > 1 ?
-                        path + fileName + "_" + lodGroup.LODs[0].Name + AssetFileExtension :
-                        path + fileName + AssetFileExtension);
+                    var meshFileName = ContentHelper.SanitizeFileName(
+                        path + fileName + ((_lodGroups.Count > 1) ? "_" + ((lodGroup.LODs.Count > 1) ? lodGroup.Name : lodGroup.LODs[0].Name) : string.Empty)) + AssetFileExtension;
                     // NOTE: we have to make a different id for each new asset file. but if a geometry asset file
                     //       with the same name already exists then we use its guid instead.
                     Guid = TryGetAssetInfo(meshFileName) is AssetInfo info && info.Type == Type ? info.Guid : Guid.NewGuid();
@@ -536,6 +549,7 @@ namespace PrimalEditor.Content
 
             foreach (var mesh in lod.Meshes)
             {
+                writer.Write(mesh.Name);
                 writer.Write(mesh.VertexSize);
                 writer.Write(mesh.VertexCount);
                 writer.Write(mesh.IndexSize);
@@ -561,6 +575,7 @@ namespace PrimalEditor.Content
             {
                 var mesh = new Mesh()
                 { 
+                    Name = reader.ReadString(),
                     VertexSize = reader.ReadInt32(),
                     VertexCount= reader.ReadInt32(),
                     IndexSize = reader.ReadInt32(),
