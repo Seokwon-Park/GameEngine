@@ -1,12 +1,16 @@
 #pragma once
 #include "ToolsCommon.h"
 
-namespace primal::tools{
+namespace primal::tools {
 	struct Vertex
 	{
-		math::Vector4 tangent{};
-		math::Vector3 position{};
-		math::Vector3 normal{};
-		math::Vector2 uv{};
+		math::v4 tangent{};
+		math::v4 joint_weights{};
+		math::u32v4 joint_indices{ u32_invalid_id, u32_invalid_id, u32_invalid_id, u32_invalid_id };
+		math::v3 position{};
+		math::v3 normal{};
+		math::v2 uv{};
+		u8 red{}, green{}, blue{};
+		u8 pad;
 	};
 }

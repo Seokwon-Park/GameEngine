@@ -19,7 +19,7 @@ namespace primal::tools
 	{
 		primitive_mesh_type type;
 		u32 segments[3]{ 1,1,1 }; // x, y, z
-		math::Vector3 size{ 1,1,1 };
+		math::v3 size{ 1,1,1 };
 		u32 lod{ 0 };
 	};
 }

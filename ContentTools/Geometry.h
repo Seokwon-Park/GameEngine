@@ -3,28 +3,116 @@
 
 namespace primal::tools {
 
-	namespace packed_vertex
+	namespace elements 
 	{
-		struct vertex_static
+		struct elements_type
 		{
-			math::Vector3 position;
-			u8 reserved[3];
-			u8 t_sign; // bit 0; tangent handedness * (tangent.z sign), bit 1: normal.z sign (0 means -1, 1 means +1)
+			enum type :u32
+			{
+				position_only = 0x00,
+				static_normal = 0x01,
+				static_normal_texture = 0x03,
+				static_color = 0x04,
+				skeletal = 0x08,
+				skeletal_color = skeletal | static_color,
+				skeletal_normal = skeletal | static_normal,
+				skeletal_normal_color = skeletal_normal | static_color,
+				skeletal_normal_texture = skeletal | static_normal_texture,
+				skeletal_normal_texture_color = skeletal_normal_texture | static_color,
+			};
+		};
+
+		struct static_color
+		{
+			u8 color[3];
+			u8 pad;
+		};
+
+		struct static_normal
+		{
+			u8 color[3];
+			u8 t_sign;		//bit 0: tangent handedness * (tangent.z sign). bit1 : normal.z sign(0 means -1, means +1)
+			u16 normal[3];
+		};
+
+		struct static_normal_texture
+		{
+			u8 color[3];
+			u8 t_sign;		//bit 0: tangent handedness * (tangent.z sign). bit1 : normal.z sign(0 means -1, means +1)
 			u16 normal[2];
 			u16 tangent[2];
-			math::Vector2 uv;
-				
+			math::v2 uv;
 		};
-	}// namespace packed_vertex
+		
+		struct skeletal
+		{
+			u8 joint_weights[3];
+			u8 pad;
+			u16 joint_indices[4];
+		};
+
+		struct skeletal_color
+		{
+			u8 joint_weights[3];
+			u8 pad;
+			u16 joint_indices[4];
+			u8 color[3];
+			u8 pad2;
+		};
+
+		struct skeletal_normal
+		{
+			u8 joint_weights[3];
+			u8 pad;
+			u16 joint_indices[4];
+			u16 normal[2];
+		};
+
+		struct skeletal_normal_color
+		{
+			u8 joint_weights[3];
+			u8 t_sign;
+			u16 joint_indices[4];
+			u16 normal[2];
+			u8 color[3];
+			u8 pad;
+		};
+
+		struct skeletal_normal_texture
+		{
+			u8 joint_weights[3];
+			u8 pad;
+			u16 joint_indices[4];
+			u16 normal[2];
+			u16 tangent[2];
+			math::v2 uv;
+		};
+
+
+		struct skeletal_normal_texture_color
+		{
+			u8 joint_weights[3]; // normalized joint weights for up to 4 joints.
+			u8 t_sign; 		//bit 0: tangent handedness * (tangent.z sign). bit1 : normal.z sign(0 means -1, means +1)
+			u16 joint_indices[4];
+			u16 normal[2];
+			u16 tangent[2];
+			math::v2 uv;
+			u8 color[3];
+			u8 pad;
+		};
+	}// namespace elements
+
+
+
 	struct mesh
 	{
-		utl::vector<math::Vector3> positions;
-		utl::vector<math::Vector3> normals;
-		utl::vector<math::Vector4> tangents;
-		utl::vector<utl::vector<math::Vector2>> uv_sets;
+		utl::vector<math::v3> positions;
+		utl::vector<math::v3> normals;
+		utl::vector<math::v4> tangents;
+		utl::vector<math::v3> colors;
+		utl::vector<utl::vector<math::v2>> uv_sets;
 		utl::vector<u32> material_indices;
 		utl::vector<u32> material_used;
-
 
 		utl::vector<u32> raw_indices;
 
@@ -34,7 +122,10 @@ namespace primal::tools {
 
 		// Output data
 		std::string name;
-		utl::vector<packed_vertex::vertex_static> packed_vertices_static;
+		elements::elements_type::type elements_type;
+		utl::vector<u8> position_buffer;
+		utl::vector<u8> element_buffer;
+
 		f32 lod_threshold{ -1.f };
 		u32 lod_id{ u32_invalid_id };
 

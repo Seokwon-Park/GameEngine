@@ -13,9 +13,9 @@ namespace primal::transform {
 		constexpr transform_id get_id() const { return _id; }
 		constexpr bool is_valid() const { return id::is_valid(_id); }
 
-		math::Vector4 rotation() const;
-		math::Vector3 position() const;
-		math::Vector3 scale() const;
+		math::v4 rotation() const;
+		math::v3 position() const;
+		math::v3 scale() const;
 
 		//math::v4 rotation() const;
 		//math::v3 position() const;

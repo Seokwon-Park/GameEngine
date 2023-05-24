@@ -41,7 +41,7 @@ namespace primal::tools {
 		//flip_winding -> true cw(¿Þ¼ÕÁÂÇ¥°è) / false ccw(¿À¸¥¼ÕÁÂÇ¥°è)
 		mesh create_plane(const primitive_init_info& info,
 			u32 horizontal_index = axis::x, u32 vertical_index = axis::z, bool flip_winding = false,
-			Vector3 offset = { -0.5f, 0.f, -0.5f }, Vector2 u_range = { 0.f, 1.f }, Vector2 v_range = { 0.f, 1.f })
+			v3 offset = { -0.5f, 0.f, -0.5f }, v2 u_range = { 0.f, 1.f }, v2 v_range = { 0.f, 1.f })
 		{
 			assert(horizontal_index < 3 && vertical_index < 3);
 			assert(horizontal_index != vertical_index);
@@ -54,19 +54,19 @@ namespace primal::tools {
 			const f32 v_step{ (v_range.y - v_range.x) / vertical_count };
 
 			mesh m{};
-			utl::vector<Vector2> uvs;
+			utl::vector<v2> uvs;
 
 			for (u32 j{ 0 }; j <= vertical_count; ++j)
 			{
 				for (u32 i{ 0 }; i <= horizontal_count; ++i)
 				{
-					Vector3 position{ offset };
+					v3 position{ offset };
 					f32* const as_array{ &position.x };
 					as_array[horizontal_index] += i * horizontal_step;
 					as_array[vertical_index] += j * vertical_step;
 					m.positions.emplace_back(position.x * info.size.x, position.y * info.size.y, position.z * info.size.z);
 
-					Vector2 uv{ u_range.x, 1.f - v_range.x };
+					v2 uv{ u_range.x, 1.f - v_range.x };
 					uv.x += i * u_step;
 					uv.y -= j * v_step;
 					uvs.emplace_back(uv);
@@ -151,7 +151,7 @@ namespace primal::tools {
 
 			c = 0;
 			m.raw_indices.resize(num_indices);
-			utl::vector<Vector2> uvs(num_indices);
+			utl::vector<v2> uvs(num_indices);
 			const f32 inv_theta_count{ 1.f / theta_count };
 			const f32 inv_phi_count{ 1.f / phi_count };
 
