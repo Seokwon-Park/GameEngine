@@ -199,7 +199,6 @@ namespace PrimalEditor.Editors
         {
             Debug.Assert(lod?.Meshes.Any() == true);
             // Calculate vertex size minus the position and normal vectors.
-            var offset = lod.Meshes[0].VertexSize - 3 * sizeof(float) - sizeof(int) - 2 * sizeof(short);
 
             // 카메라 포지션과 타겟을 적절하게 설정하기 위해서 , 우리는 렌더링하는 이 오브젝트가 얼마나 큰지 알아내야 함.
             // 그러기 위해서는 경계상자를 알아야 한다.
@@ -214,9 +213,9 @@ namespace PrimalEditor.Editors
             {
                 var vertexData = new MeshRendererVertexData() { Name = mesh.Name };
 
-                using (var reader = new BinaryReader(new MemoryStream(mesh.Vertices)))
+                using (var reader = new BinaryReader(new MemoryStream(mesh.Positions)))
                 {
-                    for(int i = 0; i< mesh.VertexCount; ++i)
+                    for (int i = 0; i < mesh.VertexCount; ++i)
                     {
                         // Read Positions
                         var posX = reader.ReadSingle();
@@ -229,20 +228,43 @@ namespace PrimalEditor.Editors
                         minX = Math.Min(minX, posX); maxX = Math.Max(maxX, posX);
                         minY = Math.Min(minY, posY); maxY = Math.Max(maxY, posY);
                         minZ = Math.Min(minZ, posZ); maxZ = Math.Max(maxZ, posZ);
+                    }
+                }
 
-                        var normX = reader.ReadUInt16() * intervals - 1.0f;
-                        var normY = reader.ReadUInt16() * intervals - 1.0f;
-                        var normZ = Math.Sqrt(Math.Clamp(1f - (normX * normX + normY * normY), 0f, 1f)) * ((signs & 0x2) - 1f);
-                        var normal = new Vector3D(normX, normY, normZ);
-                        normal.Normalize();
-                        vertexData.Normals.Add(normal);
-                        avgNormal += normal;
+                if (mesh.ElementsType.HasFlag(ElementsType.Normals))
+                {
+                    var tSpaceOffset = 0;
+                    if (mesh.ElementsType.HasFlag(ElementsType.Joints)) tSpaceOffset = sizeof(short) * 4; // skip joint indices.
+                    // Read normals
+                    using (var reader = new BinaryReader(new MemoryStream(mesh.Elements)))
+                    {
+                        for (int i = 0; i < mesh.VertexCount; ++i)
+                        {
+                            var signs = (reader.ReadUInt32() >> 24) & 0x000000ff;
+                            reader.BaseStream.Position += tSpaceOffset;
+                            // Reade normals
+                            var normX = reader.ReadUInt16() * intervals - 1.0f;
+                            var normY = reader.ReadUInt16() * intervals - 1.0f;
+                            var normZ = Math.Sqrt(Math.Clamp(1f - (normX * normX + normY * normY), 0f, 1f)) * ((signs & 0x2) - 1f);
+                            var normal = new Vector3D(normX, normY, normZ);
+                            normal.Normalize();
+                            vertexData.Normals.Add(normal);
+                            avgNormal += normal;
 
-                        //Read UVs (skip tangent and joint data)
-                        reader.BaseStream.Position += (offset -sizeof(float ) * 2);
-                        var u = reader.ReadSingle();
-                        var v = reader.ReadSingle();
-                        vertexData.UVs.Add(new Point(u, v));
+                            //Read UVs (skip tangent and joint data)
+                            if (mesh.ElementsType.HasFlag(ElementsType.TSpace))
+                            {
+                                reader.BaseStream.Position += sizeof(short) * 2; // skip tangents
+                                var u = reader.ReadSingle();
+                                var v = reader.ReadSingle();
+                                vertexData.UVs.Add(new Point(u, v));
+                            }
+
+                            if (mesh.ElementsType.HasFlag(ElementsType.Joints) && mesh.ElementsType.HasFlag(ElementsType.Colors))
+                            {
+                                reader.BaseStream.Position += 4; // skip colors.
+                            }
+                        }
                     }
                 }
 

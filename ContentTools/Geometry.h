@@ -32,7 +32,7 @@ namespace primal::tools {
 		{
 			u8 color[3];
 			u8 t_sign;		//bit 0: tangent handedness * (tangent.z sign). bit1 : normal.z sign(0 means -1, means +1)
-			u16 normal[3];
+			u16 normal[2];
 		};
 
 		struct static_normal_texture
@@ -106,13 +106,13 @@ namespace primal::tools {
 
 	struct mesh
 	{
-		utl::vector<math::v3> positions;
-		utl::vector<math::v3> normals;
-		utl::vector<math::v4> tangents;
-		utl::vector<math::v3> colors;
-		utl::vector<utl::vector<math::v2>> uv_sets;
-		utl::vector<u32> material_indices;
-		utl::vector<u32> material_used;
+		utl::vector<math::v3>				positions;
+		utl::vector<math::v3>				normals;
+		utl::vector<math::v4>				tangents;
+		utl::vector<math::v3>				colors;
+		utl::vector<utl::vector<math::v2>>	uv_sets;
+		utl::vector<u32>					material_indices;
+		utl::vector<u32>					material_used;
 
 		utl::vector<u32> raw_indices;
 

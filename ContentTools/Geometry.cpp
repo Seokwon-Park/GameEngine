@@ -1,4 +1,5 @@
 #include "Geometry.h"
+#include "..\Utilities\IOStream.h"
 
 namespace primal::tools {
 	namespace {
@@ -138,9 +139,9 @@ namespace primal::tools {
 			using namespace elements;
 			switch (elements_type)
 			{
-			case elements_type::static_color: return sizeof(static_color);
 			case elements_type::static_normal: return sizeof(static_normal);
 			case elements_type::static_normal_texture: return sizeof(static_normal_texture);
+			case elements_type::static_color: return sizeof(static_color);
 			case elements_type::skeletal: return sizeof(skeletal);
 			case elements_type::skeletal_color: return sizeof(skeletal_color);
 			case elements_type::skeletal_normal: return sizeof(skeletal_normal);
@@ -244,7 +245,8 @@ namespace primal::tools {
 				for (u32 i{ 0 }; i < num_vertices; ++i)
 				{
 					Vertex& v{ m.vertices[i] };
-					element_buffer[i] = { {v.red, v.green, v.blue}, t_signs[i], {normals[i].x, normals[i].y}, {tangents[i].x, tangents[i].y},
+					element_buffer[i] = { {v.red, v.green, v.blue}, t_signs[i], 
+											{normals[i].x, normals[i].y}, {tangents[i].x, tangents[i].y},
 					v.uv};
 				}
 			}
@@ -351,6 +353,8 @@ namespace primal::tools {
 			{
 				m.elements_type = elements_type::static_color;
 			}
+
+			// TODO: we lack data for skeletal meshes. Expand for skeletal meshes laer.
 		}
 
 		void process_vertices(mesh& m, const geometry_import_settings& settings)
@@ -375,7 +379,10 @@ namespace primal::tools {
 		u64 get_mesh_size(const mesh& m)
 		{
 			const u64 num_vertices{ m.vertices.size() };
-			const u64 vertex_buffer_size{ sizeof(packed_vertex::vertex_static) * num_vertices };
+			const u64 position_buffer_size{ m.position_buffer.size() };
+			assert(position_buffer_size == sizeof(math::v3) * num_vertices);
+			const u64 element_buffer_size{ m.element_buffer.size() };
+			assert(element_buffer_size == get_vertex_element_size(m.elements_type) * num_vertices);
 			const u64 index_size{ (num_vertices < (1 << 16)) ? sizeof(u16) : sizeof(u32) };
 			const u64 index_buffer_size{ index_size * m.indices.size() };
 			constexpr u64 su32{ sizeof(u32) };
@@ -383,12 +390,14 @@ namespace primal::tools {
 			{
 				su32 + m.name.size() + // mesh name length and room for mesh name string
 				su32 + // lod id
-				su32 + // vertex size
+				su32 + // vertex element size ( vertex size excluding position element)
+				su32 + // element type enumeration
 				su32 + // number of vertices
 				su32 + // index size (16 bit of 32 bit)
 				su32 + // number of indices
 				sizeof(f32) + // LOD threshold
-				vertex_buffer_size + // room for vertices
+				position_buffer_size + // room for vertices
+				element_buffer_size+
 				index_buffer_size // room for indices
 			};
 
@@ -422,50 +431,48 @@ namespace primal::tools {
 			return size;
 		}
 
-		void pack_mesh_data(const mesh& m, u8* const buffer, u64& at)
+		void pack_mesh_data(const mesh& m, utl::blob_stream_writer& blob)
 		{
-			constexpr u64 su32{ sizeof(u32) };
-			u32 s{ 0 };
 			// mesh name
-			s = (u32)m.name.size();
-			memcpy(&buffer[at], &s, su32); at += su32;
-			memcpy(&buffer[at], m.name.c_str(), s); at += s;
+			blob.write((u32)m.name.size());
+			blob.write(m.name.c_str(), m.name.size());
 			//lod_id
-			s = m.lod_id;
-			memcpy(&buffer[at], &s, su32); at += su32;
-			//vertex size
-			constexpr u32 vertex_size{ sizeof(packed_vertex::vertex_static) };
-			s = vertex_size;
-			memcpy(&buffer[at], &s, su32); at += su32;
+			blob.write(m.lod_id);
+			//vertex element size
+			const u32 elements_size{ (u32)get_vertex_element_size(m.elements_type) };
+			blob.write(elements_size);
+			//elements type enumeration
+			blob.write((u32)m.elements_type);
 			//number of vertieces
 			const u32 num_vertices{ (u32)m.vertices.size() };
-			s = num_vertices;
-			memcpy(&buffer[at], &s, su32); at += su32;
+			blob.write(num_vertices);
 			//index size (16 bit or 32 bit) 
 			const u32 index_size{ (num_vertices < (1 << 16)) ? sizeof(u16) : sizeof(u32) };
-			s = index_size;
-			memcpy(&buffer[at], &s, su32); at += su32;
+			blob.write(index_size);
 			// number of indices
 			const u32 num_indices{ (u32)m.indices.size() };
-			s = num_indices;
-			memcpy(&buffer[at], &s, su32); at += su32;
+			blob.write(num_indices);
 			// LOD threshold
-			memcpy(&buffer[at], &m.lod_threshold, sizeof(f32)); at += sizeof(f32);
-			// vertex data
-			s = vertex_size * num_vertices;
-			memcpy(&buffer[at], m.packed_vertices_static.data(), s); at += s;
+			blob.write(m.lod_threshold);
+			// position buffer
+			assert(m.position_buffer.size() == sizeof(math::v3) * num_vertices);
+			blob.write(m.position_buffer.data(), m.position_buffer.size());
+			// element buffer
+			assert(m.element_buffer.size() == elements_size* num_vertices);
+			blob.write(m.element_buffer.data(), m.element_buffer.size());
+
 			// index data
-			s = index_size * num_indices;
-			void* data{ (void*)m.indices.data() };
+			const u32 index_buffer_size{ index_size * num_indices };
+			const u8* data{ (const u8*)m.indices.data() };
 			utl::vector<u16> indices;
 
 			if (index_size == sizeof(u16))
 			{
 				indices.resize(num_indices);
 				for (u32 i{ 0 }; i < num_indices; ++i) indices[i] = (u16)m.indices[i];
-				data = (void*)indices.data();
+				data = (const u8*)indices.data();
 			}
-			memcpy(&buffer[at], data, s); at += s;
+			blob.write(data, index_buffer_size);
 		}
 
 		bool split_meshes_by_material(u32 material_idx, const mesh& m, mesh& submesh)
@@ -566,41 +573,35 @@ namespace primal::tools {
 
 	void pack_data(const scene& scene, scene_data& data)
 	{
-		constexpr u64 su32{ sizeof(u32) };
 		const u64 scene_size{ get_scene_size(scene) };
 		data.buffer_size = (u32)scene_size;
 		data.buffer = (u8*)CoTaskMemAlloc(scene_size);
 		assert(data.buffer);
 
-		u8* const buffer{ data.buffer };
-		u64 at{ 0 };
-		u32 s{ 0 };
+		utl::blob_stream_writer blob{ data.buffer, data.buffer_size };
 
 		// scene name
-		s = (u32)scene.name.size();
-		memcpy(&buffer[at], &s, su32); at += su32;
-		memcpy(&buffer[at], scene.name.c_str(), s); at += s;
+		blob.write((u32)scene.name.size());
+		blob.write(scene.name.c_str(), scene.name.size()); 
 
 		//number of LODs
-		s = (u32)scene.lod_groups.size();
-		memcpy(&buffer[at], &s, su32); at += su32;
+		blob.write((u32)scene.lod_groups.size());
 
 		for (auto& lod : scene.lod_groups)
 		{
 			// LOD name
-			s = (u32)lod.name.size();
-			memcpy(&buffer[at], &s, su32); at += su32;
-			memcpy(&buffer[at], lod.name.c_str(), s); at += s;
+			blob.write((u32)lod.name.size());
+			blob.write(lod.name.c_str(), lod.name.size());
 
 			// number of meshes in this LOD
-			s = (u32)lod.meshes.size();
-			memcpy(&buffer[at], &s, su32); at += su32;
+			blob.write((u32)lod.meshes.size());
 
 			for (auto& mesh : lod.meshes)
 			{
-				pack_mesh_data(mesh, buffer, at);
+				pack_mesh_data(mesh, blob);
 			}
 		}
-		assert(scene_size == at);
+
+		assert(scene_size == blob.offset());
 	}
 }
