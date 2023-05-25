@@ -214,14 +214,12 @@ namespace PrimalEditor.Editors
                 var vertexData = new MeshRendererVertexData() { Name = mesh.Name };
 
                 using (var reader = new BinaryReader(new MemoryStream(mesh.Positions)))
-                {
                     for (int i = 0; i < mesh.VertexCount; ++i)
                     {
                         // Read Positions
                         var posX = reader.ReadSingle();
                         var posY = reader.ReadSingle();
                         var posZ = reader.ReadSingle();
-                        var signs = (reader.ReadUInt32() >> 24) & 0x000000ff;
                         vertexData.Positions.Add(new Point3D(posX, posY, posZ));
 
                         // Adjust the bounding box:
@@ -229,7 +227,6 @@ namespace PrimalEditor.Editors
                         minY = Math.Min(minY, posY); maxY = Math.Max(maxY, posY);
                         minZ = Math.Min(minZ, posZ); maxZ = Math.Max(maxZ, posZ);
                     }
-                }
 
                 if (mesh.ElementsType.HasFlag(ElementsType.Normals))
                 {
@@ -237,7 +234,6 @@ namespace PrimalEditor.Editors
                     if (mesh.ElementsType.HasFlag(ElementsType.Joints)) tSpaceOffset = sizeof(short) * 4; // skip joint indices.
                     // Read normals
                     using (var reader = new BinaryReader(new MemoryStream(mesh.Elements)))
-                    {
                         for (int i = 0; i < mesh.VertexCount; ++i)
                         {
                             var signs = (reader.ReadUInt32() >> 24) & 0x000000ff;
@@ -265,7 +261,6 @@ namespace PrimalEditor.Editors
                                 reader.BaseStream.Position += 4; // skip colors.
                             }
                         }
-                    }
                 }
 
                 using (var reader = new BinaryReader(new MemoryStream(mesh.Indices)))

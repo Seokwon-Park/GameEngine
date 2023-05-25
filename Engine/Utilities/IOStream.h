@@ -87,7 +87,7 @@ namespace primal::utl
 			_position += offset;
 		}
 
-		[[nodiscard]] constexpr const u8* const buffer_start() const { return _buffer; }
+		[[nodiscard]] constexpr const u8* const buffer_start() const { return   _buffer; }
 		[[nodiscard]] constexpr const u8* const buffer_end() const { return &_buffer[_buffer_size]; }
 		[[nodiscard]] constexpr const u8* const position() const { return _position; }
 		[[nodiscard]] constexpr size_t offset() const { return _position - _buffer; }

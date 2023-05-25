@@ -139,9 +139,9 @@ namespace primal::tools {
 			using namespace elements;
 			switch (elements_type)
 			{
+			case elements_type::static_color: return sizeof(static_color);
 			case elements_type::static_normal: return sizeof(static_normal);
 			case elements_type::static_normal_texture: return sizeof(static_normal_texture);
-			case elements_type::static_color: return sizeof(static_color);
 			case elements_type::skeletal: return sizeof(skeletal);
 			case elements_type::skeletal_color: return sizeof(skeletal_color);
 			case elements_type::skeletal_normal: return sizeof(skeletal_normal);
@@ -246,8 +246,8 @@ namespace primal::tools {
 				{
 					Vertex& v{ m.vertices[i] };
 					element_buffer[i] = { {v.red, v.green, v.blue}, t_signs[i], 
-											{normals[i].x, normals[i].y}, {tangents[i].x, tangents[i].y},
-					v.uv};
+										{normals[i].x, normals[i].y}, {tangents[i].x, tangents[i].y},
+										v.uv};
 				}
 			}
 			break;
@@ -260,7 +260,7 @@ namespace primal::tools {
 					Vertex& v{ m.vertices[i] };
 					const u16 indices[4]{ (u16)v.joint_indices.x, (u16)v.joint_indices.y, (u16)v.joint_indices.z,  (u16)v.joint_indices.w };
 					element_buffer[i] = { {joint_weights[i].x, joint_weights[i].y, joint_weights[i].z},{},
-						{indices[0], indices[1], indices[2], indices[3]} };
+										{indices[0], indices[1], indices[2], indices[3]} };
 				}
 			}
 			break;
@@ -583,7 +583,6 @@ namespace primal::tools {
 		// scene name
 		blob.write((u32)scene.name.size());
 		blob.write(scene.name.c_str(), scene.name.size()); 
-
 		//number of LODs
 		blob.write((u32)scene.lod_groups.size());
 

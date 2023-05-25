@@ -7,7 +7,7 @@ namespace primal::tools {
 	{
 		struct elements_type
 		{
-			enum type :u32
+			enum type : u32
 			{
 				position_only = 0x00,
 				static_normal = 0x01,
@@ -63,7 +63,7 @@ namespace primal::tools {
 		struct skeletal_normal
 		{
 			u8 joint_weights[3];
-			u8 pad;
+			u8 t_sign;
 			u16 joint_indices[4];
 			u16 normal[2];
 		};
@@ -81,7 +81,7 @@ namespace primal::tools {
 		struct skeletal_normal_texture
 		{
 			u8 joint_weights[3];
-			u8 pad;
+			u8 t_sign;
 			u16 joint_indices[4];
 			u16 normal[2];
 			u16 tangent[2];
@@ -114,17 +114,17 @@ namespace primal::tools {
 		utl::vector<u32>					material_indices;
 		utl::vector<u32>					material_used;
 
-		utl::vector<u32> raw_indices;
+		utl::vector<u32>					raw_indices;
 
 		// Intermediate data
-		utl::vector<Vertex> vertices;
-		utl::vector<u32> indices;
+		utl::vector<Vertex>					vertices;
+		utl::vector<u32>					indices;
 
 		// Output data
-		std::string name;
-		elements::elements_type::type elements_type;
-		utl::vector<u8> position_buffer;
-		utl::vector<u8> element_buffer;
+		std::string							name;
+		elements::elements_type::type		elements_type;
+		utl::vector<u8>						position_buffer;
+		utl::vector<u8>						element_buffer;
 
 		f32 lod_threshold{ -1.f };
 		u32 lod_id{ u32_invalid_id };
