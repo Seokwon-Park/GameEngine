@@ -75,7 +75,7 @@ namespace primal::graphics::d3d12::d3dx
 		desc.pPipelineStateSubobjectStream = stream;
 		return create_pipeline_state(desc);
 	}
-	ID3D12Resource* create_buffer(u32 buffer_size, void* data /* = nullptr */, bool is_cpu_accessible /* = false */,
+	ID3D12Resource* create_buffer(const void* data, u32 buffer_size, bool is_cpu_accessible /* = false */,
 		D3D12_RESOURCE_STATES state /* = D3D12_RESOURCE_STATE_COMMON */,
 		D3D12_RESOURCE_FLAGS flags /* = D3D12_RESOURCE_FLAG_NONE */,
 		ID3D12Heap* heap /* = nullptr */ , u64 heap_offset /* = 0 */)
@@ -125,7 +125,7 @@ namespace primal::graphics::d3d12::d3dx
 			{
 				// NOTE: range's Begin and End fields are set to 0, to indicate that
 				//		 the CPU is not reading any data (i.e. write-only)
-				D3D12_RANGE range{};
+				const D3D12_RANGE range{};
 				void* cpu_address{ nullptr };
 				DXCall(resource->Map(0, &range, reinterpret_cast<void**>(&cpu_address)));
 				assert(cpu_address);
