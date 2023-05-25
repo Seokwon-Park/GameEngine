@@ -19,6 +19,7 @@ namespace primal::utl
 		template<typename T>
 		[[nodiscard]] T read()
 		{
+			static_assert(std::is_arithmetic_v<T>, "Template argument should be a primitive type.");
 			T value{ *((T*)_position) };
 			_position += sizeof(T);
 			return value;
@@ -60,6 +61,7 @@ namespace primal::utl
 		template<typename T>
 		void write(T value )
 		{
+			static_assert(std::is_arithmetic_v<T>, "Template argument should be a primitive type.");
 			assert(&_position[sizeof(T)] <= &_buffer[_buffer_size]);
 			*((T*)_position) = value;
 			_position += sizeof(T);
