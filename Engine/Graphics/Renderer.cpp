@@ -64,6 +64,7 @@ namespace primal::graphics
 		assert(id::is_valid(id));
 		gfx.surface.remove(id);
 	}
+
 	void surface::resize(u32 width, u32 height) const
 	{
 		assert(is_valid());
@@ -83,5 +84,15 @@ namespace primal::graphics
 	{
 		assert(is_valid());
 		gfx.surface.render(_id);
+	}
+
+	id::id_type add_submesh(const u8* data)
+	{
+		return id::id_type();
+	}
+
+	void remove_submesh(id::id_type id)
+	{
+
 	}
 }

@@ -3,6 +3,21 @@
 
 namespace primal::content
 {
+	struct asset_type
+	{
+		enum type : u32
+		{
+			unknown,
+			animation,
+			audio,
+			material,
+			mesh,
+			skeleton,
+			texture,
+
+			count
+		};
+	};
 	struct primitive_topology
 	{
 		enum type :u32
@@ -16,4 +31,7 @@ namespace primal::content
 			count
 		};
 	};
+
+	id::id_type create_resource(const void* const data, asset_type::type type);
+	void destory_resource(id::id_type id, asset_type::type type);
 }

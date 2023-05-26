@@ -45,7 +45,7 @@ namespace primal::math
 		return unpack_to_unit_float<bits>(i) * (max - min) + min;
 	}
 
-	// Align by rounding up. Will result in a multiple of 'alignemnt'
+	// Align by rounding up. Will result in a multiple of 'alignemnt' that is greater than or equal to 'size'.
 	template<u64 alignment>
 	constexpr u64 align_size_up(u64 size)
 	{
@@ -56,7 +56,7 @@ namespace primal::math
 	}
 
 
-	// Align by rounding up. Will result in a multiple of 'alignemnt'
+	// Align by rounding up. Will result in a multiple of 'alignemnt' that is less than or equal to 'size'.
 	template<u64 alignment>
 	constexpr u64 align_size_down(u64 size)
 	{

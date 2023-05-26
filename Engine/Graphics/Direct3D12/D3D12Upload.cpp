@@ -86,6 +86,7 @@ namespace primal::graphics::d3d12::upload
 
 	d3d12_upload_context::d3d12_upload_context(u32 aligned_size)
 	{
+		assert(upload_cmd_queue);
 		{
 			// We don't want to lock this function for longer then necessary. So, we scope this lock.
 			std::lock_guard lock{ frame_mutex };
