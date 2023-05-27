@@ -18,3 +18,4 @@ fbxsdk.h
 https://www.autodesk.com/developer-network/platform-technologies/fbx-sdk-2020-2
 ![image](https://github.com/Seokwon-Park/GameEngine/assets/22045739/af51d162-e7af-499a-913d-e012189fb16d)
 
++ 영상 다 따라가고 나서 추가로 혼자 구현해보기
