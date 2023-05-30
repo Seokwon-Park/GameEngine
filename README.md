@@ -18,3 +18,6 @@ fbxsdk.h
 https://www.autodesk.com/developer-network/platform-technologies/fbx-sdk-2020-2
 ![image](https://github.com/Seokwon-Park/GameEngine/assets/22045739/af51d162-e7af-499a-913d-e012189fb16d)
 
++ 영상 다 따라가고 나서 추가로 혼자 구현해보기
++ The Cherno 채널과 연계해서 필요한 기능 구현해보기
++ c#부분 코드 완전 이해 하기
