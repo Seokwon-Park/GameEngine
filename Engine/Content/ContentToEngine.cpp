@@ -64,6 +64,9 @@ namespace primal::content
 			u32 _lod_count;
 
 		};
+
+		// This constant indicates that an element in geometry_hierarchies is not a pointer, but a gpu_id
+		constexpr uintptr_t single_mesh_marker{ (uintptr_t)0x01 };
 		utl::free_list<u8*> geometry_hierarchies;
 		std::mutex geometry_mutex;
 
@@ -76,7 +79,7 @@ namespace primal::content
 			assert(lod_count);
 			constexpr u32 su32{ sizeof(u32) };
 			// add size of lod_count, thresholds and lod offsets to be size of hierarchy.
-			u32 size{ su32 + (sizeof(f32) + sizeof(geometry_hierarchy_stream::lod_offset)) + lod_count };
+			u32 size{ su32 + (sizeof(f32) + sizeof(geometry_hierarchy_stream::lod_offset)) * lod_count };
 
 			for (u32 lod_idx{ 0 }; lod_idx < lod_count; ++lod_idx)
 			{
@@ -131,9 +134,55 @@ namespace primal::content
 			return true;
 				}());
 
+			static_assert(alignof(void*) > 2, "We need the least significant bit for the single mesh marker.");
 			std::lock_guard lock{ geometry_mutex };
 			return geometry_hierarchies.add(hierarchy_buffer);
 
+		}
+
+		// Creates a single submesh gpu_id
+		// NOTE: expects the same data as create_geometry_resource()
+		id::id_type create_single_submesh(const void* const data)
+		{
+			assert(data);
+			utl::blob_stream_reader blob{ (const u8*)data };
+			// skip lod_count, lod_threshold, submesh_count and size_of_submeshes
+			blob.skip(sizeof(u32) + sizeof(f32) + sizeof(u32) + sizeof(u32));
+			const u8* at{ blob.position() };
+			const id::id_type gpu_id{ graphics::add_submesh(at) };
+
+			// create a fake pointer and put it in the geometry_hierarchies.
+			static_assert(sizeof(uintptr_t) > sizeof(id::id_type));
+			constexpr u8 shift_bits{ (sizeof(uintptr_t) - sizeof(id::id_type)) << 3 };
+			u8* const fake_pointer{ (u8* const)((((uintptr_t)gpu_id) << shift_bits) | single_mesh_marker) };
+			std::lock_guard lock{ geometry_mutex };
+			return geometry_hierarchies.add(fake_pointer);
+
+		}
+
+		// geometry가 single lod에 single submesh인지 결정
+		// note: create_geometry_resource()와 같은 데이터를 사용할 것으로 기대
+		bool is_single_mesh(const void* const data)
+		{
+			assert(data);
+			utl::blob_stream_reader blob{ (const u8*)data };
+			const u32 lod_count{ blob.read<u32>() };
+			assert(lod_count);
+			if (lod_count > 1) return false;
+
+			//skip over threshold
+			blob.skip(sizeof(f32));
+			const u32 submesh_count{ blob.read<u32>() };
+			assert(submesh_count);
+			return submesh_count == 1;
+		}
+
+		id::id_type gpu_id_from_fake_pointer(u8* const pointer)
+		{
+			assert((uintptr_t)pointer & single_mesh_marker);
+			static_assert(sizeof(uintptr_t) > sizeof(id::id_type));
+			constexpr u8 shift_bits{ (sizeof(uintptr_t) - sizeof(id::id_type)) << 3 };
+			return (((uintptr_t)pointer) >> shift_bits) & (uintptr_t)id::invalid_id;
 		}
 		// NOTE: 'data'가 포함할 것으로 기대되는것
 		// struct {
@@ -154,6 +203,7 @@ namespace primal::content
 		//
 		// Output format
 		// 
+		// If geometry has more than one LOD or submesh:
 		// struct{
 		//		u32 lod_count,
 		//		f32 thresholds[lod_count]
@@ -162,30 +212,41 @@ namespace primal::content
 		//			u16 count
 		//		} lod_offsets[lod_count],
 		//		id::id_type gpu_ids[total_number
+		//}geometry_hierarchy
+		//
+		// If geometry has a single LOD and submesh:
+		// 
+		// (gpu_id<<32) | 0x01
 		//
 		id::id_type create_geometry_resource(const void* const data)
 		{
-			return create_mesh_hierarchy(data);
+			assert(data);
+			return is_single_mesh(data) ? create_single_submesh(data) : create_mesh_hierarchy(data);
 		}
 
 		void destroy_geometry_resource(id::id_type id)
 		{
 			std::lock_guard lock{ geometry_mutex };
 			u8* const pointer{ geometry_hierarchies[id] };
-
-			geometry_hierarchy_stream stream{ pointer };
-			const u32 lod_count{ stream.lod_count() };
-			u32 id_index{ 0 };
-			for (u32 lod{ 0 }; lod < lod_count; ++lod)
+			if ((uintptr_t)pointer & single_mesh_marker)
 			{
-				for (u32 i{ 0 }; i < stream.lod_offsets()[lod].count; ++i)
-				{
-					graphics::remove_submesh(stream.gpu_ids()[id_index++]);
-				}
+				graphics::remove_submesh(gpu_id_from_fake_pointer(pointer));
 			}
+			else
+			{
+				geometry_hierarchy_stream stream{ pointer };
+				const u32 lod_count{ stream.lod_count() };
+				u32 id_index{ 0 };
+				for (u32 lod{ 0 }; lod < lod_count; ++lod)
+				{
+					for (u32 i{ 0 }; i < stream.lod_offsets()[lod].count; ++i)
+					{
+						graphics::remove_submesh(stream.gpu_ids()[id_index++]);
+					}
+				}
 
-			free(pointer);
-
+				free(pointer);
+			}
 			geometry_hierarchies.remove(id);
 		}
 	} // anonymous namespace
@@ -209,7 +270,7 @@ namespace primal::content
 		return id;
 	}
 
-	void destroy_resource(id::id_type id, asset_type::type type)
+	void destory_resource(id::id_type id, asset_type::type type)
 	{
 		assert(id::is_valid(id));
 		switch (type)

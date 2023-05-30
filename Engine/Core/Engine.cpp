@@ -24,6 +24,7 @@ namespace {
 				return 0;
 			}
 		}
+		break;
 		//사용자가 alt를 누른상태에서 문자키를 눌렀을때
 		case WM_SYSCHAR:
 			if (wparam == VK_RETURN && (HIWORD(lparam) & KF_ALTDOWN))

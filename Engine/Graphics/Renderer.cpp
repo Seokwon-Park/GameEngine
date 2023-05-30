@@ -88,11 +88,11 @@ namespace primal::graphics
 
 	id::id_type add_submesh(const u8* data)
 	{
-		return id::id_type();
+		return gfx.resources.add_submesh(data);
 	}
 
 	void remove_submesh(id::id_type id)
 	{
-
+		gfx.resources.remove_submesh(id);
 	}
 }

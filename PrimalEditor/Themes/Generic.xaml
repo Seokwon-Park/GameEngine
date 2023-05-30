@@ -7,7 +7,7 @@
         <Setter Property="HorizontalContentAlignment" Value="Center"/>
         <Setter Property="ItemContainerStyle" Value="{Binding (ListView.View).ItemContainerStyle,RelativeSource={RelativeSource Self}}"/>
         <Setter Property="ItemTemplate" Value="{Binding (ListView.View).ItemTemplate, RelativeSource={RelativeSource Self}}"/>
-        <Setter Property="VerticalAlignment" Value="Top"/>
+        <Setter Property="VerticalContentAlignment" Value="Top"/>
         <Setter Property="ItemsPanel">
             <Setter.Value>
                 <ItemsPanelTemplate>

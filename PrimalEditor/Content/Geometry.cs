@@ -9,6 +9,7 @@ using System.DirectoryServices.ActiveDirectory;
 using System.IO;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Security.Cryptography.Xml;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
@@ -47,6 +48,15 @@ namespace PrimalEditor.Content
         Joints = 0x04,
         Colors = 0x08
     }
+
+    enum PrimitiveTopology
+    {
+        PointList = 1,
+        LineList,
+        LineStrip,
+        TriangleList,
+        TriangleStrip,
+    };
 
     class Mesh : ViewModelBase
     {
@@ -122,6 +132,8 @@ namespace PrimalEditor.Content
             }
         }
         public ElementsType ElementsType { get; set; }
+
+        public PrimitiveTopology PrimitiveTopology { get; set; }
 
         public byte[] Positions { get; set; }
         public byte[] Elements { get; set; }
@@ -386,6 +398,7 @@ namespace PrimalEditor.Content
             var lodId = reader.ReadInt32();
             mesh.ElementSize = reader.ReadInt32();
             mesh.ElementsType = (ElementsType)reader.ReadInt32();
+            mesh.PrimitiveTopology = PrimitiveTopology.TriangleList; // ContentTools currently only support triangle list meshes.
             mesh.VertexCount = reader.ReadInt32();
             mesh.IndexSize = reader.ReadInt32();
             mesh.IndexCount = reader.ReadInt32();
@@ -487,6 +500,11 @@ namespace PrimalEditor.Content
                     _lodGroups.Clear();
                     _lodGroups.Add(lodGroup);
                 }
+
+                // For Testing. Remove later!
+                // PackForEngine();
+                // For Testing. Remove later!
+
             }
             catch (Exception ex)
             {
@@ -555,6 +573,80 @@ namespace PrimalEditor.Content
             return savedFiles;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// struct {
+        /// 		u32 lod_count,
+        /// 		struct {
+        /// 			float lod_threshold,
+        /// 			u32 submesh_count,
+        /// 			u32 size_of_submeshes,
+        /// 			struct {
+        /// 				u32 element_size, u32 vertex_count,
+        /// 				u32 index_count, u32 elements_type, u32 primitive topology
+        /// 				u8 positions[sizeof(f32) * 3 * vertex_count],		// sizeof(positions) must be a multiple of 4bytes. Pad if needed.
+        /// 				u8 elements[sizeof(element_size) * vertex_count],	// sizeof(elements) must be a multiple of 4bytes. Pad if needed.
+        /// 				u8 indices[index_size * index_count],
+        /// 			} submeshes[submesh_count]
+        /// 		}mesh_lods[lod_count]
+        /// }geometry
+        /// 
+        /// 
+        public override byte[] PackForEngine()
+        {
+            using var writer = new BinaryWriter(new MemoryStream());
+            writer.Write(GetLODGroup().LODs.Count);
+            foreach (var lod in GetLODGroup().LODs)
+            {
+                writer.Write(lod.LodThreshold);
+                writer.Write(lod.Meshes.Count);
+                var sizeOfSubmeshesPosition = writer.BaseStream.Position;
+                writer.Write(0);
+                foreach (var mesh in lod.Meshes)
+                {
+                    writer.Write(mesh.ElementSize);
+                    writer.Write(mesh.VertexCount);
+                    writer.Write(mesh.IndexCount);
+                    writer.Write((int)mesh.ElementsType);
+                    writer.Write((int)mesh.PrimitiveTopology);
+
+                    var alignedPositionBuffer = new byte[MathUtil.AlignSizeUp(mesh.Positions.Length, 4)];
+                    Array.Copy(mesh.Positions, alignedPositionBuffer, mesh.Positions.Length);
+                    var alignedElementBuffer = new byte[MathUtil.AlignSizeUp(mesh.Elements.Length, 4)];
+                    Array.Copy(mesh.Elements, alignedElementBuffer, mesh.Elements.Length);
+
+                    writer.Write(alignedPositionBuffer);
+                    writer.Write(alignedElementBuffer);
+                    writer.Write(mesh.Indices);
+                }
+
+                var endOfSubmeshes = writer.BaseStream.Position;
+                var sizeOfSubmeshes = (int)(endOfSubmeshes - sizeOfSubmeshesPosition - sizeof(int));
+
+                writer.BaseStream.Position = sizeOfSubmeshesPosition;
+                writer.Write(sizeOfSubmeshes);
+                writer.BaseStream.Position = endOfSubmeshes;
+
+            }
+            writer.Flush();
+            var data = (writer.BaseStream as MemoryStream)?.ToArray();
+            Debug.Assert(data.Length > 0);
+
+            //For Testing. Remove later!
+            using(var fs = new FileStream(@"..\..\EngineTest\model.model", FileMode.Create))
+            {
+                fs.Write(data, 0, data.Length);
+            }
+            //For Testing. Remove later!
+            
+
+            return data;
+        }
+
+
+
+
         private void LODToBinary(MeshLOD lod, BinaryWriter writer, out byte[] hash)
         {
             writer.Write(lod.Name);
@@ -568,6 +660,7 @@ namespace PrimalEditor.Content
                 writer.Write(mesh.Name);
                 writer.Write(mesh.ElementSize);
                 writer.Write((int)mesh.ElementsType);
+                writer.Write((int)mesh.PrimitiveTopology);
                 writer.Write(mesh.VertexCount);
                 writer.Write(mesh.IndexSize);
                 writer.Write(mesh.IndexCount);
@@ -596,6 +689,7 @@ namespace PrimalEditor.Content
                     Name = reader.ReadString(),
                     ElementSize = reader.ReadInt32(),
                     ElementsType = (ElementsType)reader.ReadInt32(),
+                    PrimitiveTopology = (PrimitiveTopology)reader.ReadInt32(),
                     VertexCount = reader.ReadInt32(),
                     IndexSize = reader.ReadInt32(),
                     IndexCount = reader.ReadInt32(),

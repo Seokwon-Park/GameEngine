@@ -60,10 +60,10 @@ namespace PrimalEditor.Content
         public byte[] Hash { get; protected set; }
 
         public abstract void Import(string file);
-
-        public abstract IEnumerable<string> Save(string File);
-
         public abstract void Load(string file);
+        public abstract IEnumerable<string> Save(string File);
+        public abstract byte[] PackForEngine();
+
 
 
         private static AssetInfo GetAssetInfo(BinaryReader reader)
