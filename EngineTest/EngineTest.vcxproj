@@ -156,6 +156,7 @@ xcopy /Y /D "C:\Program Files (x86)\Windows Kits\10\bin\10.0.22621.0\x64\dxil.dl
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Main.cpp" />
+    <ClCompile Include="RenderItem.cpp" />
     <ClCompile Include="TestRenderer.cpp" />
     <ClCompile Include="ShaderCompilation.cpp" />
   </ItemGroup>
