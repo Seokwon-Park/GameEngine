@@ -165,40 +165,40 @@ namespace primal::graphics::d3d12::camera
 
 		constexpr set_function set_functions[]
 		{
-		set_up_vector,
-		set_field_of_view,
-		set_aspect_ratio,
-		set_view_width,
-		set_view_height,
-		set_near_z,
-		set_far_z,
-		dummy_set,
-		dummy_set,
-		dummy_set,
-		dummy_set,
-		dummy_set,
-		dummy_set,
-		dummy_set,
+			set_up_vector,
+			set_field_of_view,
+			set_aspect_ratio,
+			set_view_width,
+			set_view_height,
+			set_near_z,
+			set_far_z,
+			dummy_set,
+			dummy_set,
+			dummy_set,
+			dummy_set,
+			dummy_set,
+			dummy_set,
+			dummy_set,
 		};
 
 		static_assert(_countof(set_functions) == graphics::camera_parameter::count);
 
 		constexpr get_function get_functions[]
 		{
-		get_up_vector,
-		get_field_of_view,
-		get_aspect_ratio,
-		get_view_width,
-		get_view_height,
-		get_near_z,
-		get_far_z,
-		get_view,
-		get_projection,
-		get_inverse_projection,
-		get_view_projection,
-		get_inverse_view_projection,
-		get_projection_type,
-		get_entity_id
+			get_up_vector,
+			get_field_of_view,
+			get_aspect_ratio,
+			get_view_width,
+			get_view_height,
+			get_near_z,
+			get_far_z,
+			get_view,
+			get_projection,
+			get_inverse_projection,
+			get_view_projection,
+			get_inverse_view_projection,
+			get_projection_type,
+			get_entity_id
 		};
 
 		static_assert(_countof(get_functions) == graphics::camera_parameter::count);
@@ -222,7 +222,7 @@ namespace primal::graphics::d3d12::camera
 		math::v3 pos{ entity.transform().position() };
 		math::v3 dir{ entity.transform().orientation() };
 		XMVECTOR position{ XMLoadFloat3(&pos) };
-		XMVECTOR direction{ XMLoadFloat3(&pos) };
+		XMVECTOR direction{ XMLoadFloat3(&dir) };
 		_view = XMMatrixLookToRH(position, direction, _up);
 
 		if (_is_dirty)
