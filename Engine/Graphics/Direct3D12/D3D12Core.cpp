@@ -5,6 +5,10 @@
 #include "D3D12PostProcess.h"
 #include "D3D12Upload.h"
 
+extern "C" {__declspec(dllexport) extern const UINT D3D12SDKVersion = 4; }
+extern "C" {__declspec(dllexport) extern const char* D3D12SDKPath= u8".\\D3D12\\"; }
+
+
 using namespace Microsoft::WRL;
 
 namespace primal::graphics::d3d12::core
@@ -507,10 +511,10 @@ namespace primal::graphics::d3d12::core
 		cmd_list->RSSetScissorRects(1, &surface.scissor_rect());
 
 		// depth prepass
-		//barriers.add(current_back_buffer,
-		//	D3D12_RESOURCE_STATE_PRESENT,
-		//	D3D12_RESOURCE_STATE_RENDER_TARGET,
-		//	D3D12_RESOURCE_BARRIER_FLAG_BEGIN_ONLY);
+		barriers.add(current_back_buffer,
+			D3D12_RESOURCE_STATE_PRESENT,
+			D3D12_RESOURCE_STATE_RENDER_TARGET,
+			D3D12_RESOURCE_BARRIER_FLAG_BEGIN_ONLY);
 		gpass::add_transitions_for_depth_prepass(barriers);
 		barriers.apply(cmd_list);
 		gpass::set_render_targets_for_depth_prepass(cmd_list);
@@ -523,14 +527,14 @@ namespace primal::graphics::d3d12::core
 		gpass::render(cmd_list, frame_info);
 
 
-		d3dx::transition_resource(cmd_list, current_back_buffer,			
-			D3D12_RESOURCE_STATE_PRESENT,
-			D3D12_RESOURCE_STATE_RENDER_TARGET);
-		// post-process
-		//barriers.add(current_back_buffer,
+		//d3dx::transition_resource(cmd_list, current_back_buffer,			
 		//	D3D12_RESOURCE_STATE_PRESENT,
-		//	D3D12_RESOURCE_STATE_RENDER_TARGET,
-		//	D3D12_RESOURCE_BARRIER_FLAG_END_ONLY);
+		//	D3D12_RESOURCE_STATE_RENDER_TARGET);
+		// post-process
+		barriers.add(current_back_buffer,
+			D3D12_RESOURCE_STATE_PRESENT,
+			D3D12_RESOURCE_STATE_RENDER_TARGET,
+			D3D12_RESOURCE_BARRIER_FLAG_END_ONLY);
 		gpass::add_transitions_for_post_process(barriers);
 		barriers.apply(cmd_list);
 

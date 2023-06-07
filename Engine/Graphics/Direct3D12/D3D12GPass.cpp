@@ -185,20 +185,18 @@ namespace primal::graphics::d3d12::gpass
 
 	void add_transitions_for_depth_prepass(d3dx::d3d12_resource_barrier& barriers)
 	{
-		//barriers.add(gpass_main_buffer.resource(),
-		//	D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE,
-		//	D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_BARRIER_FLAG_BEGIN_ONLY);
+		barriers.add(gpass_main_buffer.resource(),
+			D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE,
+			D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_BARRIER_FLAG_BEGIN_ONLY);
 		barriers.add(gpass_depth_buffer.resource(),
 			D3D12_RESOURCE_STATE_DEPTH_READ | D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE | D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE,
 			D3D12_RESOURCE_STATE_DEPTH_WRITE);
-
-		//flags = D3D12_RESOURCE_BARRIER_FLAG_END_ONLY;
 	}
 	void add_transitions_for_gpass(d3dx::d3d12_resource_barrier& barriers)
 	{
 		barriers.add(gpass_main_buffer.resource(),
 			D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE,
-			D3D12_RESOURCE_STATE_RENDER_TARGET);
+			D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_BARRIER_FLAG_END_ONLY);
 		barriers.add(gpass_depth_buffer.resource(),
 			D3D12_RESOURCE_STATE_DEPTH_WRITE,
 			D3D12_RESOURCE_STATE_DEPTH_READ | D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE | D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
@@ -209,9 +207,6 @@ namespace primal::graphics::d3d12::gpass
 		barriers.add(gpass_main_buffer.resource(),
 			D3D12_RESOURCE_STATE_RENDER_TARGET,
 			D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
-		//barriers.add(gpass_depth_buffer.resource(),
-		//	D3D12_RESOURCE_STATE_DEPTH_READ | D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE | D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE,
-		//	D3D12_RESOURCE_STATE_DEPTH_WRITE, D3D12_RESOURCE_BARRIER_FLAG_BEGIN_ONLY);
 	}
 
 	void set_render_targets_for_depth_prepass(id3d12_graphics_command_list* cmd_list)

@@ -1,12 +1,14 @@
+#include <fstream>
+#include <filesystem>
+
 #include <d3d12shader.h>
 #include <dxcapi.h>
 
 #include "ShaderCompilation.h"
 #include "Graphics\Direct3D12\D3D12Core.h"
 #include "Graphics\Direct3D12\D3D12Shaders.h"
-
-#include <fstream>
-#include <filesystem>
+#include "Content/ContentToEngine.h"
+#include "Utilities/IOStream.h"
 
 #pragma comment(lib, "dxcompiler.lib")
 
@@ -240,6 +242,33 @@ namespace
 		return true;
 	}
 } // anonymous namespace
+
+std::unique_ptr<u8[]> compile_shader(shader_file_info info, const char* file_path)
+{
+	std::filesystem::path full_path{ file_path };
+	full_path += info.file_name;
+	if (!std::filesystem::exists(full_path)) return {};
+
+	// NOTE: according to marcelolr (https://github.com/Microsoft/DirectXShaderCompiler/issues/79)
+	//		 "...creating compiler instances is pretty cheap, so it's probably not worth the hassle of caching / sharing them."
+	shader_compiler compiler{};
+	dxc_compiled_shader compiled_shader{ compiler.compile(info,full_path) };
+
+	if (compiled_shader.byte_code && compiled_shader.byte_code->GetBufferPointer() && compiled_shader.byte_code->GetBufferSize())
+	{
+		static_assert(content::compiled_shader::hash_length == _countof(DxcShaderHash::HashDigest));
+		const u64 buffer_size{ sizeof(u64) + content::compiled_shader::hash_length + compiled_shader.byte_code->GetBufferSize() };
+		std::unique_ptr<u8[]> buffer{ std::make_unique<u8[]>(buffer_size) };
+		utl::blob_stream_writer blob{ buffer.get(), buffer_size };
+		blob.write(compiled_shader.byte_code->GetBufferSize());
+		blob.write(compiled_shader.hash.HashDigest, content::compiled_shader::hash_length);
+		blob.write((u8*)compiled_shader.byte_code->GetBufferPointer(), compiled_shader.byte_code->GetBufferSize());
+		
+		assert(blob.offset() == buffer_size);
+		return buffer;
+	}
+	return {};
+}
 
 bool compile_shaders()
 {
