@@ -33,9 +33,6 @@ namespace PrimalEditor.GameDev
         private static readonly string[] _buildConfigurationNames = new string[] { "Debug", "DebugEditor", "Release", "ReleaseEditor" };
         private static EnvDTE80.DTE2 _vsInstance = null;
 
-        [MarshalAs(UnmanagedType.LPStr)]
-        public const string vsViewKindTextView = "{7651A703-06E5-11D1-8EBD-00A0C90F26EA}";
-
         public static bool BuildSucceeded { get; private set; } = true;
         public static bool BuildDone { get; private set; } = true;
 
@@ -179,7 +176,7 @@ namespace PrimalEditor.GameDev
                         var cpp = files.FirstOrDefault(x => Path.GetExtension(x) == ".cpp");
                         if (!string.IsNullOrEmpty(cpp))
                         {
-                            _vsInstance.ItemOperations.OpenFile(cpp, vsViewKindTextView).Visible = true;
+                            _vsInstance.ItemOperations.OpenFile(cpp, EnvDTE.Constants.vsViewKindTextView).Visible = true;
                         }
                         _vsInstance.MainWindow.Activate();
                         _vsInstance.MainWindow.Visible = true;
@@ -247,10 +244,10 @@ namespace PrimalEditor.GameDev
 
             CallOnSTAThread(() =>
             {
+                _vsInstance.MainWindow.Visible = showWindow;
                 if (!_vsInstance.Solution.IsOpen)
                     _vsInstance.Solution.Open(project.Solution);
 
-                _vsInstance.MainWindow.Visible = showWindow;
                 _vsInstance.Events.BuildEvents.OnBuildProjConfigBegin += OnBuildSolutionBegin;
                 _vsInstance.Events.BuildEvents.OnBuildProjConfigDone += OnBuildSolutionDone;
 
