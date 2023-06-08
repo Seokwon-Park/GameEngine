@@ -75,7 +75,7 @@ id::id_type create_render_item(id::id_type entity_id)
 	_1.join();
 	_2.join();
 	// add a render item using the model and its materials.
-	create_material();
+	// create_material();
 
 	// TODO: add add_render_item in renderer
 	id::id_type item_id = { 0 };

@@ -29,6 +29,8 @@ namespace primal::graphics::d3d12::content
 		utl::free_list<std::unique_ptr<u8[]>> materials;
 		std::mutex material_mutex{};
 
+		id::id_type create_root_signature(material_type::type type, shader_flags::flags flags);
+
 		class d3d12_material_stream
 		{
 		public:
@@ -94,6 +96,16 @@ namespace primal::graphics::d3d12::content
 
 				assert(shader_index == (u32)_mm_popcnt_u32(_shader_flags));
 			}
+
+			[[nodiscard]] constexpr u32 texture_count() const { return _texture_count; }
+			[[nodiscard]] constexpr material_type::type material_type() const { return _type; }
+			[[nodiscard]] constexpr shader_flags::flags shader_flags()const { return _shader_flags; }
+			[[nodiscard]] constexpr id::id_type root_signature_id() const { return _root_signature_id; }
+			[[nodiscard]] constexpr id::id_type* texture_ids() const { return _texture_ids; }
+			[[nodiscard]] constexpr u32* descriptor_indices() const { return _descriptor_indices; }
+			[[nodiscard]] constexpr id::id_type* shader_ids() const { return _shader_ids; }
+
+
 		private:
 			void initialize()
 			{
@@ -139,6 +151,11 @@ namespace primal::graphics::d3d12::content
 			}
 
 			return D3D11_PRIMITIVE_TOPOLOGY_UNDEFINED;
+		}
+
+		id::id_type create_root_signature(material_type::type type, shader_flags::flags flags)
+		{
+			return id::invalid_id;
 		}
 	} // anonymous namespace
 	namespace submesh

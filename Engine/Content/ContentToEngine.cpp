@@ -262,15 +262,15 @@ namespace primal::content
 		//	id::id_type* texture_ids;
 		// } material_init_info
 		//
-		id::id_type create_material_resource(u8* data)
+		id::id_type create_material_resource(const void* const data)
 		{
 			assert(data);
 			return graphics::add_material(*(const graphics::material_init_info* const)data);
 		}
 
-		void destroy_resource(id::id_type id)
+		void destroy_material_resource(id::id_type id)
 		{
-			graphics
+			graphics::remove_material(id);
 		}
 
 	} // anonymous namespace

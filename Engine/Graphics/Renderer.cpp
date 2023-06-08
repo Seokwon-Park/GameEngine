@@ -15,25 +15,25 @@ namespace primal::graphics
 
 		platform_interface gfx{};
 
-		bool set_platform_interface(graphics_platform platform)
+		bool set_platform_interface(graphics_platform platform, platform_interface& pi)
 		{
 			switch (platform)
 			{
 			case graphics_platform::direct3d12:
-				d3d12::get_platform_interface(gfx);
+				d3d12::get_platform_interface(pi);
 				break;
 			default:
 				return false;
 			}
 
-			assert(gfx.platform == platform);
+			assert(pi.platform == platform);
 			return true;
 		}
 
 	} // anonymous namespace
 	bool initialize(graphics_platform platform)
 	{
-		return set_platform_interface(platform) && gfx.initialize();
+		return set_platform_interface(platform, gfx) && gfx.initialize();
 	}
 	void shutdown()
 	{
