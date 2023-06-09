@@ -4,6 +4,7 @@
 #include "D3D12GPass.h"
 #include "D3D12PostProcess.h"
 #include "D3D12Upload.h"
+#include "D3D12Content.h"
 
 extern "C" {__declspec(dllexport) extern const UINT D3D12SDKVersion = 4; }
 extern "C" {__declspec(dllexport) extern const char* D3D12SDKPath= u8".\\D3D12\\"; }
@@ -293,7 +294,7 @@ namespace primal::graphics::d3d12::core
 			if (SUCCEEDED(D3D12GetDebugInterface(IID_PPV_ARGS(&debug_interface))))
 			{
 				debug_interface->EnableDebugLayer();
-#if 0
+#if 1
 #pragma message("WARNING: GPU_based validation is enabled. This will considerably slow down the renderer!")
 				debug_interface->SetEnableGPUBasedValidation(1);
 #endif
@@ -332,7 +333,11 @@ namespace primal::graphics::d3d12::core
 		new (&gfx_command) d3d12_command(main_device, D3D12_COMMAND_LIST_TYPE_DIRECT);
 		if (!gfx_command.command_queue()) return failed_init();
 
-		if (!(shaders::initialize() && gpass::initialize() && fx::initialize() && upload::initialize()))
+		if (!(shaders::initialize() &&
+			gpass::initialize() && 
+			fx::initialize() && 
+			upload::initialize() &&
+			content::initialize()))
 			return failed_init();
 
 		NAME_D3D12_OBJECT(main_device, L"Main D3D12 Device");
@@ -357,6 +362,7 @@ namespace primal::graphics::d3d12::core
 		}
 
 		// shutdown modules (release는 initialize의 역순)
+		content::shutdown();
 		upload::shutdown();
 		fx::shutdown();
 		gpass::shutdown();
