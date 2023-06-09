@@ -111,7 +111,7 @@ namespace primal::graphics::d3d12::d3dx
 		{
 			assert(resource);
 			assert(_offset < max_resource_barriers);
-			D3D12_RESOURCE_BARRIER& barrier{ _barriers[_offset]};
+			D3D12_RESOURCE_BARRIER& barrier{ _barriers[_offset] };
 			barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
 			barrier.Flags = flags;
 			barrier.Transition.pResource = resource;
@@ -157,7 +157,7 @@ namespace primal::graphics::d3d12::d3dx
 			cmd_list->ResourceBarrier(_offset, _barriers);
 			_offset = 0;
 		}
-			
+
 	private:
 		D3D12_RESOURCE_BARRIER _barriers[max_resource_barriers]{};
 		u32 _offset{ 0 };
@@ -244,15 +244,24 @@ namespace primal::graphics::d3d12::d3dx
 	// static samplers = 0dwords (compiled into shader)
 	struct d3d12_root_signature_desc : public D3D12_ROOT_SIGNATURE_DESC1
 	{
-		constexpr explicit d3d12_root_signature_desc(const d3d12_root_parameter* parameters,
-			u32 parameter_count,
-			const D3D12_STATIC_SAMPLER_DESC* static_samplers = nullptr,
-			u32 sampler_count = 0, D3D12_ROOT_SIGNATURE_FLAGS flags =
+		constexpr static D3D12_ROOT_SIGNATURE_FLAGS default_flags
+		{
+			D3D12_ROOT_SIGNATURE_FLAG_DENY_VERTEX_SHADER_ROOT_ACCESS |
 			D3D12_ROOT_SIGNATURE_FLAG_DENY_HULL_SHADER_ROOT_ACCESS |
 			D3D12_ROOT_SIGNATURE_FLAG_DENY_DOMAIN_SHADER_ROOT_ACCESS |
 			D3D12_ROOT_SIGNATURE_FLAG_DENY_GEOMETRY_SHADER_ROOT_ACCESS |
+			D3D12_ROOT_SIGNATURE_FLAG_DENY_PIXEL_SHADER_ROOT_ACCESS |
 			D3D12_ROOT_SIGNATURE_FLAG_DENY_AMPLIFICATION_SHADER_ROOT_ACCESS |
-			D3D12_ROOT_SIGNATURE_FLAG_DENY_MESH_SHADER_ROOT_ACCESS)
+			D3D12_ROOT_SIGNATURE_FLAG_DENY_MESH_SHADER_ROOT_ACCESS |
+			D3D12_ROOT_SIGNATURE_FLAG_CBV_SRV_UAV_HEAP_DIRECTLY_INDEXED |
+			D3D12_ROOT_SIGNATURE_FLAG_SAMPLER_HEAP_DIRECTLY_INDEXED 
+		};
+		constexpr explicit d3d12_root_signature_desc(const d3d12_root_parameter* parameters,
+			u32 parameter_count,
+			D3D12_ROOT_SIGNATURE_FLAGS flags = default_flags,
+			const D3D12_STATIC_SAMPLER_DESC* static_samplers = nullptr,
+			u32 sampler_count = 0
+		)
 			:D3D12_ROOT_SIGNATURE_DESC1{ parameter_count, parameters, sampler_count, static_samplers, flags }
 		{ }
 
@@ -277,7 +286,7 @@ namespace primal::graphics::d3d12::d3dx
 	};
 #pragma warning(pop)
 
-// Pipeline State subobject (PSS) macro
+	// Pipeline State subobject (PSS) macro
 #define PSS(name, ...) using d3d12_pipeline_state_subobject_##name = d3d12_pipeline_state_subobject<__VA_ARGS__>;
 	PSS(root_signature, D3D12_PIPELINE_STATE_SUBOBJECT_TYPE_ROOT_SIGNATURE, ID3D12RootSignature*);
 	PSS(vs, D3D12_PIPELINE_STATE_SUBOBJECT_TYPE_VS, D3D12_SHADER_BYTECODE);

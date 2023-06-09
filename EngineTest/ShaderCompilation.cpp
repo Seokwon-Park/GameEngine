@@ -176,7 +176,7 @@ namespace
 		}
 	private:
 		// NOTE Shader Model 6.x can  also be used( AS and MS are only supported from SM6.5 on)
-		constexpr static const char* _profile_strings[shader_type::count]{ "vs_6_5", "hs_6_5", "ds_6_5", "gs_6_5", "ps_6_5", "cs_6_5", "as_6_5", "ms_6_6" };
+		constexpr static const char* _profile_strings[shader_type::count]{ "vs_6_6", "hs_6_6", "ds_6_6", "gs_6_6", "ps_6_6", "cs_6_6", "as_6_6", "ms_6_6" };
 		static_assert(_countof(_profile_strings) == shader_type::count);
 
 		// 36.3 영상에서는 IDxcCompiler3가 포함되어있지 않았으나 현재는 그냥 포함되어 있으므로 스킵 
