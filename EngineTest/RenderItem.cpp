@@ -76,9 +76,10 @@ id::id_type create_render_item(id::id_type entity_id)
 	_2.join();
 	// add a render item using the model and its materials.
 	create_material();
+	id::id_type materials[]{mtl_id };
 
 	// TODO: add add_render_item in renderer
-	id::id_type item_id = { 0 };
+	id::id_type item_id = { graphics::add_render_item(id::invalid_id, model_id, _countof(materials), &materials[0])};
 
 	render_item_entity_map[item_id] = entity_id;
 	return item_id;
