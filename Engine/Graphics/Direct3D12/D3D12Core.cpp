@@ -604,7 +604,7 @@ namespace primal::graphics::d3d12::core
 		barriers.apply(cmd_list);
 
 		// 현재 백버퍼에 대해 작성할 것, 백버퍼를 렌더 타겟으로
-		fx::post_process(cmd_list, surface.rtv());
+		fx::post_process(cmd_list,d3d12_info, surface.rtv());
 
 		// after-post process
 		d3dx::transition_resource(cmd_list, current_back_buffer,

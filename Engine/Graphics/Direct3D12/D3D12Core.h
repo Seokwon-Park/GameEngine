@@ -8,7 +8,7 @@ namespace primal::graphics::d3d12
 	{
 		const frame_info* info;
 		camera::d3d12_camera* camera;
-		D3D12_GPU_VIRTUAL_ADDRESS global_shader_Data;
+		D3D12_GPU_VIRTUAL_ADDRESS global_shader_data;
 		u32 surface_width;
 		u32 surface_height;
 		u32 frame_index;

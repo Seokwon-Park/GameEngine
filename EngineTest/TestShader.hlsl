@@ -22,6 +22,8 @@ VertexOut TestShaderVS(in uint VertexIdx: SV_VertexID)
 {
     VertexOut vsOut;
     
+    
+    
     vsOut.HomogeneousPosition = 0.f;
     vsOut.WorldPosition = 0.f;
     vsOut.WorldNormal = 0.f;
