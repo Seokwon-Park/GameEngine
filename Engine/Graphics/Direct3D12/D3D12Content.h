@@ -11,11 +11,11 @@ namespace primal::graphics::d3d12::content
 	{
 		struct views_cache
 		{
-			D3D12_GPU_VIRTUAL_ADDRESS* const position_buffers;
-			D3D12_GPU_VIRTUAL_ADDRESS* const element_buffers;
-			D3D12_INDEX_BUFFER_VIEW* const index_buffer_views;
-			D3D_PRIMITIVE_TOPOLOGY* const primitive_topologies;
-			u32* const elements_types;
+			D3D12_GPU_VIRTUAL_ADDRESS* const	position_buffers;
+			D3D12_GPU_VIRTUAL_ADDRESS* const	element_buffers;
+			D3D12_INDEX_BUFFER_VIEW* const		index_buffer_views;
+			D3D_PRIMITIVE_TOPOLOGY* const		primitive_topologies;
+			u32* const							elements_types;
 		};
 
 		id::id_type add(const u8*& data);
@@ -46,10 +46,10 @@ namespace primal::graphics::d3d12::content
 	{
 		struct items_cache
 		{
-			id::id_type* const entity_ids;
-			id::id_type* const submesh_gpu_ids;
-			id::id_type* const 	material_ids;
-			ID3D12PipelineState** const psos;
+			id::id_type* const			entity_ids;
+			id::id_type* const			submesh_gpu_ids;
+			id::id_type* const 			material_ids;
+			ID3D12PipelineState** const gpass_psos;
 			ID3D12PipelineState** const depth_psos;
 		};
 

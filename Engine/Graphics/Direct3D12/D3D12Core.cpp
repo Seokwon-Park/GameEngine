@@ -5,6 +5,8 @@
 #include "D3D12PostProcess.h"
 #include "D3D12Upload.h"
 #include "D3D12Content.h"
+#include "D3D12Camera.h"
+#include "Shaders/SharedTypes.h"
 
 extern "C" {__declspec(dllexport) extern const UINT D3D12SDKVersion = 4; }
 extern "C" {__declspec(dllexport) extern const char* D3D12SDKPath= u8".\\D3D12\\"; }
@@ -266,7 +268,43 @@ namespace primal::graphics::d3d12::core
 				for (auto& resource : resources) release(resource);
 				resources.clear();
 			}
+		}
 
+		d3d12_frame_info get_d3d12_frame_info(const frame_info info, constant_buffer& cbuffer, const d3d12_surface& surface, u32 frame_idx, f32 delta_time)
+		{
+			camera::d3d12_camera& camera{ camera::get(info.camera_id) };
+			camera.update();
+			hlsl::GlobalShaderData data{};
+
+			using namespace DirectX;
+			XMStoreFloat4x4A(&data.View, camera.view());
+			XMStoreFloat4x4A(&data.Projection, camera.projection());
+			XMStoreFloat4x4A(&data.InvProjection, camera.inverse_projection());
+			XMStoreFloat4x4A(&data.ViewProjection, camera.view_projection());
+			XMStoreFloat4x4A(&data.InvViewProjection, camera.inverse_view_projection());
+			XMStoreFloat3(&data.CameraPosition, camera.position());
+			XMStoreFloat3(&data.CameraDirection, camera.direction());
+			data.ViewWidth = surface.width();
+			data.ViewHeight =  surface.height();
+			data.DeltaTime = delta_time;
+
+			// NOTE : be careful not ot read from this buffer. Reads are really really slow.
+			hlsl::GlobalShaderData* const shader_data{ cbuffer.allocate<hlsl::GlobalShaderData>() };
+			// TODO: handle the case when cbuffer is full.
+			memcpy(shader_data, &data, sizeof(hlsl::GlobalShaderData));
+
+			d3d12_frame_info d3d12_info
+			{
+				&info,
+				&camera,
+				cbuffer.gpu_address(shader_data),
+				data.ViewWidth,
+				data.ViewHeight,
+				frame_idx,
+				delta_time
+			};
+
+			return d3d12_info;
 		}
 	} //anonymous namespace
 
@@ -503,7 +541,7 @@ namespace primal::graphics::d3d12::core
 		return surfaces[id].height();
 
 	}	
-	void render_surface(surface_id id)
+	void render_surface(surface_id id, frame_info info)
 	{
 		// gpu가 작업을 끝내기를 기다렸다가 끝나면 allocator를 리셋
 		// 명령을 저장하는데 사용한 메모리를 할당 해제
@@ -523,12 +561,11 @@ namespace primal::graphics::d3d12::core
 		const d3d12_surface& surface{ surfaces[id] };
 		ID3D12Resource* const current_back_buffer{ surface.back_buffer() };
 		
-		d3d12_frame_info frame_info
+		const d3d12_frame_info d3d12_info
 		{
-			surface.width(),
-			surface.height()
+			get_d3d12_frame_info(info, cbuffer, surface, frame_idx, 16.7f)
 		};
-		gpass::set_size({ frame_info.surface_width, frame_info.surface_height });
+		gpass::set_size({ d3d12_info.surface_width, d3d12_info.surface_height });
 		d3dx::d3d12_resource_barrier& barriers{ resource_barriers };
 
 		// Record commands
@@ -546,13 +583,13 @@ namespace primal::graphics::d3d12::core
 		gpass::add_transitions_for_depth_prepass(barriers);
 		barriers.apply(cmd_list);
 		gpass::set_render_targets_for_depth_prepass(cmd_list);
-		gpass::depth_prepass(cmd_list, frame_info);
+		gpass::depth_prepass(cmd_list, d3d12_info);
 
 		// Geometry and lighting pass
 		gpass::add_transitions_for_gpass(barriers);
 		barriers.apply(cmd_list);
 		gpass::set_render_targets_for_gpass(cmd_list);
-		gpass::render(cmd_list, frame_info);
+		gpass::render(cmd_list, d3d12_info);
 
 
 		//d3dx::transition_resource(cmd_list, current_back_buffer,			
