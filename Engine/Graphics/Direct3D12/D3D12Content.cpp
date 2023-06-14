@@ -534,7 +534,7 @@ namespace primal::graphics::d3d12::content
 		id::id_type add(id::id_type entity_id, id::id_type geometry_content_id,
 						u32 material_count, const id::id_type* const material_ids)
 		{
-			//assert(id::is_valid(entity_id) && id::is_valid(geometry_content_id));
+			assert(id::is_valid(entity_id) && id::is_valid(geometry_content_id));
 			assert(material_count && material_ids);
 			id::id_type* const gpu_ids{ (id::id_type* const)alloca(material_count * sizeof(id::id_type)) };
 			primal::content::get_submesh_gpu_ids(geometry_content_id, material_count, gpu_ids);
