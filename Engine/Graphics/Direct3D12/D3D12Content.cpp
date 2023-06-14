@@ -24,6 +24,16 @@ namespace primal::graphics::d3d12::content
 			u32 elements_type{};
 		};
 
+		struct d3d12_render_item
+		{
+			id::id_type entity_id;
+			id::id_type submesh_gpu_id;
+			id::id_type material_id;
+			id::id_type pso_id;
+			id::id_type depth_pso_id;
+		};
+
+
 		utl::free_list<ID3D12Resource*> submesh_buffers{};
 		utl::free_list<submesh_view> submesh_views{};
 		std::mutex submesh_mutex{};
@@ -36,7 +46,7 @@ namespace primal::graphics::d3d12::content
 		utl::free_list<std::unique_ptr<u8[]>> materials;
 		std::mutex material_mutex{};
 
-		utl::free_list<render_item::d3d12_render_item> render_items;
+		utl::free_list<d3d12_render_item> render_items;
 		utl::free_list<std::unique_ptr<id::id_type[]>> render_item_ids;
 		utl::vector<ID3D12PipelineState*> pipeline_states;
 		std::unordered_map<u64, id::id_type> pso_map;
@@ -46,7 +56,6 @@ namespace primal::graphics::d3d12::content
 		{
 			utl::vector<primal::content::lod_offset> lod_offsets;
 			utl::vector<id::id_type> geometry_ids;
-			utl::vector<f32> thresholds;
 		} frame_cache;
 
 		id::id_type create_root_signature(material_type::type type, shader_flags::flags flags);
@@ -528,7 +537,7 @@ namespace primal::graphics::d3d12::content
 	{
 		// Creates a buffer that's basically an array of id::id_types.
 		// buffer[0] = geometry_content_id
-		// buffer[1 .. n] = submesh_gpu_ids(n is the number of submeshes which must also eqaul the number of material ids).
+		// buffer[1 .. n] = submesh_gpu_ids(n is the number of low-level render item ids which must also eqaul the number of submeshes/material ids).
 		// buffer[n + 1] = id::invalid_id (this marks the end of submesh_gpu_id array).
 		//
 		id::id_type add(id::id_type entity_id, id::id_type geometry_content_id,
@@ -597,7 +606,6 @@ namespace primal::graphics::d3d12::content
 
 			frame_cache.lod_offsets.clear();
 			frame_cache.geometry_ids.clear();
-			frame_cache.thresholds.clear();
 			const u32 count{ info.render_item_count };
 
 			std::lock_guard lock{ render_item_mutex };
@@ -606,10 +614,9 @@ namespace primal::graphics::d3d12::content
 			{
 				const id::id_type* const buffer{ render_item_ids[info.render_item_ids[i]].get() };
 				frame_cache.geometry_ids.emplace_back(buffer[0]);
-				frame_cache.thresholds.emplace_back(info.thresholds[i]);
 			}
 
-			primal::content::get_lod_offsets(frame_cache.geometry_ids.data(), frame_cache.thresholds.data(), count, frame_cache.lod_offsets);
+			primal::content::get_lod_offsets(frame_cache.geometry_ids.data(), info.thresholds, count, frame_cache.lod_offsets);
 			assert(frame_cache.lod_offsets.size() == count);
 
 			u32 d3d12_render_item_count{ 0 };

@@ -184,6 +184,7 @@ namespace primal::graphics::d3d12::core
 		d3d12_command gfx_command;
 		surface_collection surfaces;
 		d3dx::d3d12_resource_barrier resource_barriers{};
+		constant_buffer constant_buffers[frame_buffer_count];
 
 		descriptor_heap rtv_desc_heap{ D3D12_DESCRIPTOR_HEAP_TYPE_RTV };
 		descriptor_heap dsv_desc_heap{ D3D12_DESCRIPTOR_HEAP_TYPE_DSV };
@@ -330,6 +331,13 @@ namespace primal::graphics::d3d12::core
 		result &= uav_desc_heap.initialize(512, false);
 		if (!result) return failed_init();
 
+		for (u32 i{ 0 }; i < frame_buffer_count; ++i)
+		{
+			new(&constant_buffers[i])
+				constant_buffer{ constant_buffer::get_default_init_info(1024 * 1024) };
+			NAME_D3D12_OBJECT_INDEXED(constant_buffers[i].buffer(), i, L"Global Constant Buffer");
+		}
+
 		new (&gfx_command) d3d12_command(main_device, D3D12_COMMAND_LIST_TYPE_DIRECT);
 		if (!gfx_command.command_queue()) return failed_init();
 
@@ -370,6 +378,11 @@ namespace primal::graphics::d3d12::core
 
 
 		release(dxgi_factory);
+
+		for (u32 i{ 0 }; i < frame_buffer_count; ++i)
+		{
+			constant_buffers[i].release();
+		}
 
 		// NOTE: some modules free their descriptors when they shudown.
 		//		 we process those by calling process_deferred_free once more.
@@ -450,6 +463,11 @@ namespace primal::graphics::d3d12::core
 		return uav_desc_heap;
 	}
 
+	constant_buffer& cbuffer()
+	{
+		return constant_buffers[current_frame_index()];
+	}
+
 	u32 current_frame_index()
 	{
 		return gfx_command.frame_index();
@@ -493,6 +511,10 @@ namespace primal::graphics::d3d12::core
 		id3d12_graphics_command_list* cmd_list{ gfx_command.command_list() };
 
 		const u32 frame_idx{ current_frame_index() };
+
+		constant_buffer& cbuffer{ constant_buffers[frame_idx] };
+		cbuffer.clear();
+
 		if (deferred_releases_flag[frame_idx])
 		{
 			process_deferred_releases(frame_idx);
