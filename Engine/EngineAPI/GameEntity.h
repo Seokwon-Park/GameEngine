@@ -19,6 +19,12 @@ namespace primal
 
 			transform::component transform() const;
 			script::component script() const;
+
+			[[nodiscard]] math::v4 rotation() const { return transform().rotation(); }
+			[[nodiscard]] math::v3 orientation() const { return transform().orientation(); }
+			[[nodiscard]] math::v3 position() const { return transform().position(); }
+			[[nodiscard]] math::v3 scale() const { return transform().scale(); }
+
 		private:
 			entity_id _id;
 		};
@@ -34,6 +40,16 @@ namespace primal
 		protected:
 			constexpr explicit entity_script(game_entity::entity entity)
 				:game_entity::entity{ entity }{}
+
+			void set_rotation(math::v4 rotation_quaternion) const { set_rotation(this, rotation_quaternion); }
+			void set_orientation(math::v3 orientation_vector) const { set_orientation(this, orientation_vector); }
+			void set_position(math::v3 position) const { set_position(this, position); }
+			void set_scale(math::v3 scale) const { set_scale(this, scale); }
+
+			static void set_rotation(const game_entity::entity* const entity, math::v4 rotation_quaternion);
+			static void set_orientation(const game_entity::entity* const entity, math::v3 orientation_vector);
+			static void set_position(const game_entity::entity* const entity, math::v3 position);
+			static void set_scale(const game_entity::entity* const entity, math::v3 scale);
 		};
 
 		namespace detail {
@@ -57,7 +73,7 @@ namespace primal
 
 			//if def 레벨 편집기와 함께 사용하기 위해 빌드하지 않을때마다 컴파일에서 제외
 #ifdef USE_WITH_EDITOR
-		u8 add_script_name(const char* name);
+			u8 add_script_name(const char* name);
 #define REGISTER_SCRIPT(TYPE)											\
 		namespace { 													\
 		const u8 _reg_##TYPE											\
@@ -77,6 +93,6 @@ namespace primal
 			}
 
 #endif //USE_WITH_EDITOR
-	} // namespace detail
-} // namespace script
+		} // namespace detail
+	} // namespace script
 }
