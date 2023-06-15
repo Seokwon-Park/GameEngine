@@ -24,7 +24,7 @@ namespace primal::math
 	[[nodiscard]] constexpr f32 unpack_to_unit_float(u32 i)
 	{
 		static_assert(bits <= sizeof(u32) * 8);
-		assert(i< (1ui32 <<bits));
+		assert(i < ((u32)1 << bits));
 		constexpr f32 intervals{ (f32)((1ui32 << bits) - 1) };
 		return (f32)i / intervals;
 	}
