@@ -186,28 +186,28 @@ namespace primal::script
 		}
 	}
 
-	void set_rotation(const game_entity::entity* const entity, math::v4 rotation_quaternion)
+	void entity_script::set_rotation(const game_entity::entity* const entity, math::v4 rotation_quaternion)
 	{
 		transform::component_cache& cache{ *get_cache_ptr(entity) };
 		cache.flags |= transform::component_flags::rotation;
 		cache.rotation = rotation_quaternion;
 	}
 
-	void set_orientation(const game_entity::entity* const entity, math::v3 orientation_vector)
+	void entity_script::set_orientation(const game_entity::entity* const entity, math::v3 orientation_vector)
 	{
 		transform::component_cache& cache{ *get_cache_ptr(entity) };
 		cache.flags |= transform::component_flags::orientation;
 		cache.orientation = orientation_vector;
 	}
 
-	void set_position(const game_entity::entity* const entity, math::v3 position)
+	void entity_script::set_position(const game_entity::entity* const entity, math::v3 position)
 	{
 		transform::component_cache& cache{ *get_cache_ptr(entity) };
 		cache.flags |= transform::component_flags::position;
 		cache.position = position;
 	}
 
-	void set_scale(const game_entity::entity* const entity, math::v3 scale)
+	void entity_script::set_scale(const game_entity::entity* const entity, math::v3 scale)
 	{
 		transform::component_cache& cache{ *get_cache_ptr(entity) };
 		cache.flags |= transform::component_flags::scale;

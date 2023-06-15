@@ -270,7 +270,7 @@ namespace primal::graphics::d3d12::core
 			}
 		}
 
-		d3d12_frame_info get_d3d12_frame_info(const frame_info info, constant_buffer& cbuffer, const d3d12_surface& surface, u32 frame_idx, f32 delta_time)
+		d3d12_frame_info get_d3d12_frame_info(const frame_info& info, constant_buffer& cbuffer, const d3d12_surface& surface, u32 frame_idx, f32 delta_time)
 		{
 			camera::d3d12_camera& camera{ camera::get(info.camera_id) };
 			camera.update();
@@ -565,6 +565,7 @@ namespace primal::graphics::d3d12::core
 		{
 			get_d3d12_frame_info(info, cbuffer, surface, frame_idx, 16.7f)
 		};
+
 		gpass::set_size({ d3d12_info.surface_width, d3d12_info.surface_height });
 		d3dx::d3d12_resource_barrier& barriers{ resource_barriers };
 
