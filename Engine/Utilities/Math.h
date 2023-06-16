@@ -49,7 +49,7 @@ namespace primal::math
 	template<u64 alignment>
 	[[nodiscard]] constexpr u64 align_size_up(u64 size)
 	{
-		static_assert(alignment, "Alignment must be non-zero.");
+		static_assert(alignment != 0, "Alignment must be non-zero.");
 		constexpr u64 mask{ alignment - 1 };
 		static_assert(!(alignment & mask), "Alignment should be a power of 2.");
 		return ((size + mask) & ~mask);
@@ -60,7 +60,7 @@ namespace primal::math
 	template<u64 alignment>
 	[[nodiscard]] constexpr u64 align_size_down(u64 size)
 	{
-		static_assert(alignment, "Alignment must be non-zero.");
+		static_assert(alignment != 0, "Alignment must be non-zero.");
 		constexpr u64 mask{ alignment - 1 };
 		static_assert(!(alignment & mask), "Alignment should be a power of 2.");
 		return (size & ~mask);

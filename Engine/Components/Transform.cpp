@@ -59,7 +59,7 @@ namespace primal::transform
 			changes_from_previous_frame[index] |= component_flags::rotation;
 		}
 
-		void set_orientation(transform_id id, const math::v3& orientaation)
+		void set_orientation(transform_id id, const math::v3& orientation)
 		{
 
 		}

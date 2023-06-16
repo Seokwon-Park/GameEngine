@@ -1,6 +1,6 @@
 #pragma once
 
-#define USE_STL_VECTOR 1
+#define USE_STL_VECTOR 0
 #define USE_STL_DEQUE 1
 
 #if USE_STL_VECTOR
@@ -11,7 +11,7 @@ namespace primal::utl
 	using vector = std::vector<T>;
 
 	template<typename T>
-	void erase_unordered(std::T& v, size_t index)
+	void erase_unordered(T& v, size_t index)
 	{
 		if (v.size() > 1)
 		{

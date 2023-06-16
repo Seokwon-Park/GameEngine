@@ -62,14 +62,24 @@ namespace primal::content
 
 		};
 
+		struct noexcept_map
+		{
+			std::unordered_map<u32, std::unique_ptr<u8[]>> map;
+			noexcept_map() = default;
+			noexcept_map(const noexcept_map&) = default;
+			noexcept_map(noexcept_map&&) noexcept = default;
+			noexcept_map& operator=(const noexcept_map&) = default;
+			noexcept_map& operator=(noexcept_map&&) noexcept = default;
+		};
 
 		// This constant indicates that an element in geometry_hierarchies is not a pointer, but a gpu_id
-		constexpr uintptr_t single_mesh_marker{ (uintptr_t)0x01 };
-		utl::free_list<u8*> geometry_hierarchies;
-		std::mutex geometry_mutex;
+		constexpr uintptr_t				single_mesh_marker{ (uintptr_t)0x01 };
+		utl::free_list<u8*>				geometry_hierarchies;
+		std::mutex						geometry_mutex;
 
-		utl::free_list <std::unordered_map<u32, std::unique_ptr<u8[]>>>	shader_groups;
-		std::mutex														shader_mutex;
+
+		utl::free_list<noexcept_map>	shader_groups;
+		std::mutex						shader_mutex;
 
 		// NOTE: expects the smae data as create_geometry_resource()
 		u32 get_geometry_hierarchy_buffer_size(const void* const data)
@@ -313,7 +323,7 @@ namespace primal::content
 	id::id_type add_shader_group(const u8* const* shaders, u32 num_shaders, const u32*const keys)
 	{
 		assert(shaders && num_shaders && keys);
-		std::unordered_map<u32, std::unique_ptr<u8[]>> group;
+		noexcept_map group;
 		for (u32 i{ 0 }; i < num_shaders; ++i)
 		{
 			assert(shaders[i]);
@@ -321,7 +331,7 @@ namespace primal::content
 			const u64 size{ compiled_shader::buffer_size(shader_ptr->byte_code_size()) };
 			std::unique_ptr<u8[]> shader{ std::make_unique<u8[]>(size) };
 			memcpy(shader.get(), shaders[i], size);
-			group[keys[i]] = std::move(shader);
+			group.map[keys[i]] = std::move(shader);
 		}
 		std::lock_guard lock{ shader_mutex };
 		return shader_groups.add(std::move(group));
@@ -332,7 +342,7 @@ namespace primal::content
 		std::lock_guard lock{ shader_mutex };
 		assert(id::is_valid(id));
 
-		shader_groups[id].clear();
+		shader_groups[id].map.clear();
 		shader_groups.remove(id);
 	}
 	compiled_shader_ptr get_shader(id::id_type id, u32 shader_key)
@@ -340,7 +350,7 @@ namespace primal::content
 		std::lock_guard lock{ shader_mutex };
 		assert(id::is_valid(id));
 
-		for (const auto& [key, value] : shader_groups[id])
+		for (const auto& [key, value] : shader_groups[id].map)
 		{
 			if (key == shader_key)
 			{
