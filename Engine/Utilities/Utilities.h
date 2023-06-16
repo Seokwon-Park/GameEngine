@@ -1,6 +1,6 @@
 #pragma once
 
-#define USE_STL_VECTOR 0
+#define USE_STL_VECTOR 1
 #define USE_STL_DEQUE 1
 
 #if USE_STL_VECTOR
