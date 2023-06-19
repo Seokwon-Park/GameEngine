@@ -153,6 +153,8 @@ namespace primal::graphics::d3d12
 			_cpu_offset += aligned_size;
 			return address; 
 		}
+
+		return nullptr;
 	}
 
 	//////////////// D3D12 TEXTURE ////////////////////////////////////////////////////

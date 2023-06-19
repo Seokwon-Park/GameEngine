@@ -155,7 +155,7 @@ namespace primal::graphics::d3d12::camera
 			*entity_id = camera.entity_id();
 		}
 
-		void dummy_set(d3d12_camera&, const void* const, u32)
+		constexpr void dummy_set(d3d12_camera&, const void* const, u32)
 		{
 
 		}
@@ -181,7 +181,7 @@ namespace primal::graphics::d3d12::camera
 			dummy_set,
 		};
 
-		static_assert(_countof(set_functions) == graphics::camera_parameter::count);
+		static_assert(_countof(set_functions) == camera_parameter::count);
 
 		constexpr get_function get_functions[]
 		{
@@ -201,7 +201,7 @@ namespace primal::graphics::d3d12::camera
 			get_entity_id
 		};
 
-		static_assert(_countof(get_functions) == graphics::camera_parameter::count);
+		static_assert(_countof(get_functions) == camera_parameter::count);
 
 	} // anonymous namespace
 
