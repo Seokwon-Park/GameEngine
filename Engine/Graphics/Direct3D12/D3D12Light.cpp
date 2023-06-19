@@ -210,6 +210,11 @@ namespace primal::graphics::d3d12::light
 
 		std::unordered_map<u64, light_set> light_sets;
 
+		constexpr void set_is_enabled(light_set& set, light_id id, const void* const data, [[maybe_unused]] u32 size)
+		{
+
+		})
+
 		constexpr void dummy_set(light_set&, light_id, const void* const, u32)
 		{
 
