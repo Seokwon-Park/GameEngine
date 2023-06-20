@@ -357,7 +357,7 @@ engine_test::initialize()
 void engine_test::run()
 {
 	timer.begin();
-	//std::this_thread::sleep_for(std::chrono::milliseconds(5));
+	std::this_thread::sleep_for(std::chrono::milliseconds(5));
 	script::update(timer.dt_avg());
 	for (u32 i{ 0 }; i < _countof(_surfaces); ++i)
 	{
@@ -369,6 +369,8 @@ void engine_test::run()
 			info.render_item_ids = &item_id;
 			info.render_item_count = 1;
 			info.thresholds = &threshold;
+			info.light_set_key = 0;
+			info.average_frame_time = timer.dt_avg();
 			info.camera_id = _surfaces[i].camera.get_id();
 
 			_surfaces[i].surface.surface.render(info);
