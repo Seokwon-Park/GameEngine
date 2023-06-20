@@ -21,7 +21,7 @@ namespace primal::graphics::d3d12
 			, _viewport{ o._viewport }, _scissor_rect{ o._scissor_rect }, _allow_tearing{o._allow_tearing}
 			, _present_flags{o._present_flags}
 		{
-			for (u32 i{ 0 }; i < frame_buffer_count; ++i)
+			for (u32 i{ 0 }; i < buffer_count; ++i)
 			{
 				_render_target_data[i].resource = o._render_target_data[i].resource;
 				_render_target_data[i].rtv = o._render_target_data[i].rtv;
@@ -47,7 +47,7 @@ namespace primal::graphics::d3d12
 
 		~d3d12_surface() { release(); }
 
-		void create_swap_chain(IDXGIFactory7* factory, ID3D12CommandQueue* cmd_queue, DXGI_FORMAT format = default_back_buffer_format);
+		void create_swap_chain(IDXGIFactory7* factory, ID3D12CommandQueue* cmd_queue);
 		void present() const;
 		void resize();
 
@@ -67,7 +67,7 @@ namespace primal::graphics::d3d12
 		constexpr void move(d3d12_surface& o)
 		{
 			_swap_chain = o._swap_chain;
-			for (u32 i{ 0 }; i < frame_buffer_count; ++i)
+			for (u32 i{ 0 }; i < buffer_count; ++i)
 			{
 				_render_target_data[i] = o._render_target_data[i];
 			}
@@ -85,7 +85,7 @@ namespace primal::graphics::d3d12
 		constexpr void reset()
 		{
 			_swap_chain= nullptr ;
-			for (u32 i{ 0 }; i < frame_buffer_count; ++i)
+			for (u32 i{ 0 }; i < buffer_count; ++i)
 			{
 				_render_target_data[i] = {};
 			}
@@ -104,10 +104,12 @@ namespace primal::graphics::d3d12
 			descriptor_handle rtv{};
 		};
 
+		// NOTE: when adding new member data here, don't forget to update the move constructor
+		//		 as well as the move() and reset() functions. This is to have the correct behavior
+		//		 when using std::vector (from STL)
 		IDXGISwapChain4*	_swap_chain{ nullptr };
 		render_target_data	_render_target_data[buffer_count]{};
 		platform::window	_window{};
-		DXGI_FORMAT _format{ default_back_buffer_format };
 		mutable u32			_current_bb_index{ 0 };
 		u32					_allow_tearing{ 0 };
 		u32					_present_flags{ 0 };
