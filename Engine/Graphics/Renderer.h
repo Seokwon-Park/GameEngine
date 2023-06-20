@@ -248,7 +248,7 @@ namespace primal::graphics
 	surface create_surface(platform::window window);
 	void remove_surface(surface_id id);
 
-	light create_lihgt(light_init_info info);
+	light create_light(light_init_info info);
 	void remove_light(light_id id, u64 light_set_key);
 
 	camera create_camera(camera_init_info info);

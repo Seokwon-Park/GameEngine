@@ -85,7 +85,7 @@ namespace primal::utl {
 			return _array[id];
 		}
 	private:
-		constexpr bool already_removed(u32 id)
+		constexpr bool already_removed(u32 id) const
 		{
 			// NOTE:  sizeof(T) == sizeof(u32) 항목이 이미 삭제되었는지 검사할 수 없다!
 			if constexpr (sizeof(T) > sizeof(u32))
