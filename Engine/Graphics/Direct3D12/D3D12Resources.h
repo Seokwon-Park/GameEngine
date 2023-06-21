@@ -26,7 +26,7 @@ namespace primal::graphics::d3d12
 	class descriptor_heap
 	{
 	public:
-		explicit descriptor_heap(D3D12_DESCRIPTOR_HEAP_TYPE type) :_type{type} {}
+		explicit descriptor_heap(D3D12_DESCRIPTOR_HEAP_TYPE type) :_type{ type } {}
 		DISABLE_COPY_AND_MOVE(descriptor_heap);
 		~descriptor_heap() { assert(!_heap); }
 
@@ -56,7 +56,7 @@ namespace primal::graphics::d3d12
 		std::mutex _mutex{};
 		u32 _capacity{ 0 };
 		u32 _size{ 0 };
-		u32 _descriptor_size{};		
+		u32 _descriptor_size{};
 		const D3D12_DESCRIPTOR_HEAP_TYPE _type{};
 	};
 
@@ -81,11 +81,11 @@ namespace primal::graphics::d3d12
 		explicit d3d12_buffer(d3d12_buffer_init_info info, bool is_cpu_accessible);
 		DISABLE_COPY(d3d12_buffer);
 		constexpr d3d12_buffer(d3d12_buffer&& o)
-			:_buffer{ o._buffer }, _gpu_address{ o._gpu_address }, _size{o._size}
+			:_buffer{ o._buffer }, _gpu_address{ o._gpu_address }, _size{ o._size }
 		{
 			o.reset();
 		}
-		
+
 		constexpr d3d12_buffer& operator=(d3d12_buffer&& o)
 		{
 			assert(this != &o);
@@ -97,10 +97,12 @@ namespace primal::graphics::d3d12
 			return *this;
 		}
 
+		~d3d12_buffer() { release(); }
+
 		void release();
 		[[nodiscard]] constexpr ID3D12Resource* const buffer()const { return _buffer; }
 		[[nodiscard]] constexpr D3D12_GPU_VIRTUAL_ADDRESS const gpu_address()const { return _gpu_address; }
-		[[nodiscard]] constexpr u32 size()const { return _size; }
+		[[nodiscard]] constexpr u32 size() const { return _size; }
 
 	private:
 		constexpr void move(d3d12_buffer& o)
@@ -112,9 +114,9 @@ namespace primal::graphics::d3d12
 		}
 		constexpr void reset()
 		{
-			_buffer =  nullptr;
-			_gpu_address =  0;
-			_size =  0;
+			_buffer = nullptr;
+			_gpu_address = 0;
+			_size = 0;
 		}
 
 		ID3D12Resource*				_buffer{ nullptr };
@@ -149,7 +151,7 @@ namespace primal::graphics::d3d12
 		[[nodiscard]] constexpr ID3D12Resource* const buffer()const { return _buffer.buffer(); }
 		[[nodiscard]] constexpr D3D12_GPU_VIRTUAL_ADDRESS const gpu_address()const { return _buffer.gpu_address(); }
 		[[nodiscard]] constexpr u32 size()const { return _buffer.size(); }
-		[[nodiscard]] constexpr u8 *const cpu_address()const { return _cpu_address; }
+		[[nodiscard]] constexpr u8* const cpu_address()const { return _cpu_address; }
 
 		template<typename T>
 		[[nodiscard]] constexpr D3D12_GPU_VIRTUAL_ADDRESS gpu_address(T* const allocation)
@@ -175,7 +177,7 @@ namespace primal::graphics::d3d12
 
 	private:
 		d3d12_buffer	_buffer{};
-		u8*				_cpu_address{ nullptr };
+		u8* _cpu_address{ nullptr };
 		u32				_cpu_offset{ 0 };
 		std::mutex		_mutex{};
 	};
@@ -185,7 +187,7 @@ namespace primal::graphics::d3d12
 		ID3D12Heap1* heap{ nullptr };
 		ID3D12Resource* resource{ nullptr };
 		D3D12_SHADER_RESOURCE_VIEW_DESC* srv_desc{ nullptr };
-		D3D12_RESOURCE_DESC* desc{nullptr};
+		D3D12_RESOURCE_DESC* desc{ nullptr };
 		D3D12_RESOURCE_ALLOCATION_INFO1 allocation_info{};
 		D3D12_RESOURCE_STATES initial_state{};
 		D3D12_CLEAR_VALUE clear_value{};
@@ -199,7 +201,7 @@ namespace primal::graphics::d3d12
 		explicit d3d12_texture(d3d12_texture_init_info info);
 		DISABLE_COPY(d3d12_texture);
 		constexpr d3d12_texture(d3d12_texture&& o)
-			:_resource{o._resource}, _srv{o._srv}
+			:_resource{ o._resource }, _srv{ o._srv }
 		{
 			o.reset();
 		}
@@ -286,7 +288,7 @@ namespace primal::graphics::d3d12
 		}
 
 		d3d12_texture _texture{};
-		descriptor_handle _rtv[d3d12_texture::max_mips ]{};
+		descriptor_handle _rtv[d3d12_texture::max_mips]{};
 		u32	_mip_count{ 0 };
 	};
 

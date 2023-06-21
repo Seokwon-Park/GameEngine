@@ -119,7 +119,7 @@ namespace primal::graphics::d3d12
 		assert(!_buffer && info.size && info.alignment);
 		_size = (u32)math::align_size_up(info.size, info.alignment);
 		_buffer = d3dx::create_buffer(info.data, _size, is_cpu_accessible, info.initial_state, info.flags,
-			info.heap, info.allocation_info.Offset);
+									  info.heap, info.allocation_info.Offset);
 		_gpu_address = _buffer->GetGPUVirtualAddress();
 		NAME_D3D12_OBJECT_INDEXED(_buffer, _size, L"D3D12 Buffer - size");
 	}

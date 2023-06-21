@@ -182,21 +182,21 @@ namespace primal::graphics::d3d12::core
 
 		using surface_collection = utl::free_list<d3d12_surface>;
 
-		id3d12_device* main_device{ nullptr };
-		IDXGIFactory7* dxgi_factory{ nullptr };
-		d3d12_command gfx_command;
-		surface_collection surfaces;
-		d3dx::d3d12_resource_barrier resource_barriers{};
-		constant_buffer constant_buffers[frame_buffer_count];
+		id3d12_device*					main_device{ nullptr };
+		IDXGIFactory7*					dxgi_factory{ nullptr };
+		d3d12_command					gfx_command;
+		surface_collection				surfaces;
+		d3dx::d3d12_resource_barrier	resource_barriers{};
+		constant_buffer					constant_buffers[frame_buffer_count];
 
 		descriptor_heap rtv_desc_heap{ D3D12_DESCRIPTOR_HEAP_TYPE_RTV };
 		descriptor_heap dsv_desc_heap{ D3D12_DESCRIPTOR_HEAP_TYPE_DSV };
 		descriptor_heap srv_desc_heap{ D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV };
 		descriptor_heap uav_desc_heap{ D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV };
 
-		utl::vector<IUnknown*> deferred_releases[frame_buffer_count]{};
-		u32 deferred_releases_flag[frame_buffer_count]{};
-		std::mutex deferred_releases_mutex{};
+		utl::vector<IUnknown*>	deferred_releases[frame_buffer_count]{};
+		u32						deferred_releases_flag[frame_buffer_count]{};
+		std::mutex				deferred_releases_mutex{};
 		
 		constexpr D3D_FEATURE_LEVEL minimum_feature_level{ D3D_FEATURE_LEVEL_11_0 };
 

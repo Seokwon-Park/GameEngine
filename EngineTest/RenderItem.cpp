@@ -17,15 +17,15 @@ namespace
 {
 	id::id_type fan_model_id{ id::invalid_id };
 	id::id_type int_model_id{ id::invalid_id };
-	//id::id_type lab_model_id{ id::invalid_id };
+	id::id_type lab_model_id{ id::invalid_id };
 
 	id::id_type fan_item_id{ id::invalid_id };
 	id::id_type int_item_id{ id::invalid_id };
-	//id::id_type lab_item_id{ id::invalid_id };
+	id::id_type lab_item_id{ id::invalid_id };
 
 	game_entity::entity_id fan_entity_id{ id::invalid_id };
 	game_entity::entity_id int_entity_id{ id::invalid_id };
-	//game_entity::entity_id lab_entity_id{ id::invalid_id };
+	game_entity::entity_id lab_entity_id{ id::invalid_id };
 
 	id::id_type vs_id{ id::invalid_id };
 	id::id_type ps_id{ id::invalid_id };
@@ -120,21 +120,21 @@ namespace
 void create_render_items()
 {
 	// load a model, pretend it belongs to entity_id
-	//auto _1 = std::thread{ [] { lab_model_id = load_model("..\\..\\x64\\lab_model.model"); }};
-	//auto _2 = std::thread{ [] { fan_model_id = load_model("..\\..\\x64\\fan_model.model"); }};
-	auto _3 = std::thread{ [] { int_model_id = load_model("..\\..\\x64\\int_model.model"); }};
+	auto _1 = std::thread{ [] { lab_model_id = load_model("..\\..\\x64\\lab_model.model"); }};
+	auto _2 = std::thread{ [] { fan_model_id = load_model("..\\..\\x64\\fan_model.model"); }};
+	auto _3 = std::thread{ [] { int_model_id = load_model("..\\..\\x64\\zelda_model.model"); }};
 
 	//load material:
 	// 1) load textures, oh nooooo we don't have any, but that's ok.
 	// 2) load shaders for that material
 	auto _4 = std::thread{ [] {load_shaders(); } };
 
-	//lab_entity_id = create_one_game_entity({}, {}, nullptr).get_id();
-	//fan_entity_id = create_one_game_entity({-10.47f, 5.94f, -6.7f}, {}, nullptr).get_id();
-	int_entity_id = create_one_game_entity({0.f, 0.8f, -6.6f}, {}, nullptr).get_id();
+	lab_entity_id = create_one_game_entity({}, {}, nullptr).get_id();
+	fan_entity_id = create_one_game_entity({}, {}, nullptr).get_id();
+	int_entity_id = create_one_game_entity({}, {}, nullptr).get_id();
 
-	//_1.join();
-	//_2.join();
+	_1.join();
+	_2.join();
 	_3.join();
 	_4.join();
 
@@ -142,21 +142,21 @@ void create_render_items()
 	create_material();
 	
 	// add a render item using the model and its materials.
-	id::id_type materials[]{mtl_id, mtl_id,  mtl_id,mtl_id, mtl_id, mtl_id, mtl_id};
+	id::id_type materials[]{mtl_id};
 
-	//lab_item_id = { graphics::add_render_item(lab_entity_id, lab_model_id, _countof(materials), &materials[0])};
-	//fan_item_id = { graphics::add_render_item(fan_entity_id, fan_model_id, _countof(materials), &materials[0])};
+	lab_item_id = { graphics::add_render_item(lab_entity_id, lab_model_id, _countof(materials), &materials[0])};
+	fan_item_id = { graphics::add_render_item(fan_entity_id, fan_model_id, _countof(materials), &materials[0])};
 	int_item_id = { graphics::add_render_item(int_entity_id, int_model_id, _countof(materials), &materials[0])};
 
-	//render_item_entity_map[lab_item_id] = lab_entity_id;
-	//render_item_entity_map[fan_item_id] = fan_entity_id;
+	render_item_entity_map[lab_item_id] = lab_entity_id;
+	render_item_entity_map[fan_item_id] = fan_entity_id;
 	render_item_entity_map[int_item_id] = int_entity_id;
 }
 
 void destroy_render_items()
 {
-	//remove_item(lab_entity_id, lab_item_id, lab_model_id);
-	//remove_item(fan_entity_id, fan_item_id, fan_model_id);
+	remove_item(lab_entity_id, lab_item_id, lab_model_id);
+	remove_item(fan_entity_id, fan_item_id, fan_model_id);
 	remove_item(int_entity_id, int_item_id, int_model_id);
 
 	// remove material
@@ -179,8 +179,8 @@ void destroy_render_items()
 
 void get_render_items(id::id_type* items, [[maybe_unused]] u32 count)
 {
-	assert(count == 1);
-	//items[0] = lab_item_id;
-	//items[0] = fan_item_id;
+	assert(count == 3);
+	items[0] = lab_item_id;
+	items[0] = fan_item_id;
 	items[0] = int_item_id;
 }
