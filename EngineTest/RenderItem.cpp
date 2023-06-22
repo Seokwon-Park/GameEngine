@@ -120,7 +120,12 @@ namespace
 void create_render_items()
 {
 	// load a model, pretend it belongs to entity_id
-	auto _1 = std::thread{ [] { lab_model_id = load_model("..\\..\\x64\\lab_model.model"); }};
+
+	// NOTE: you can replace them with any model that's available to you.
+	assert(std::filesystem::exists("..\\..\\x64\\fan_model.model"));
+	assert(std::filesystem::exists("..\\..\\x64\\fan_model.model"));
+	assert(std::filesystem::exists("..\\..\\x64\\zelda_model.model"));
+	auto _1 = std::thread{ [] { lab_model_id = load_model("..\\..\\x64\\fan_model.model"); }};
 	auto _2 = std::thread{ [] { fan_model_id = load_model("..\\..\\x64\\fan_model.model"); }};
 	auto _3 = std::thread{ [] { int_model_id = load_model("..\\..\\x64\\zelda_model.model"); }};
 
@@ -129,9 +134,9 @@ void create_render_items()
 	// 2) load shaders for that material
 	auto _4 = std::thread{ [] {load_shaders(); } };
 
-	lab_entity_id = create_one_game_entity({}, {}, nullptr).get_id();
-	fan_entity_id = create_one_game_entity({}, {}, nullptr).get_id();
-	int_entity_id = create_one_game_entity({}, {}, nullptr).get_id();
+	lab_entity_id = create_one_game_entity({ -2.f, 0.5f, 3.f }, { 0.f, 0.f, math::pi / 2 }, "fan_script").get_id();
+	fan_entity_id = create_one_game_entity({ 2.f, 0.5f, 3.f}, {0.f, 0.f, math::pi/2}, "rotator_script").get_id();
+	int_entity_id = create_one_game_entity({ 0.0f, 0.5f, 3.f }, {0.f, 0.f, math::pi / 2 }, "wibbly_wobbly_script").get_id();
 
 	_1.join();
 	_2.join();
@@ -181,6 +186,6 @@ void get_render_items(id::id_type* items, [[maybe_unused]] u32 count)
 {
 	assert(count == 3);
 	items[0] = lab_item_id;
-	items[0] = fan_item_id;
-	items[0] = int_item_id;
+	items[1] = fan_item_id;
+	items[2] = int_item_id;
 }
