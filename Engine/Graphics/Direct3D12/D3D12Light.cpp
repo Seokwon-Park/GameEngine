@@ -10,7 +10,7 @@ namespace primal::graphics::d3d12::light
 		struct light_owner
 		{
 			game_entity::entity_id entity_id{ id::invalid_id };
-			u32 data_index;
+			u32 data_index{ u32_invalid_id };
 			graphics::light::type type;
 			bool is_enabled;
 		};
@@ -234,6 +234,9 @@ namespace primal::graphics::d3d12::light
 			utl::free_list<light_owner>						_owners;
 			utl::vector<hlsl::DirectionalLightParameters>	_non_cullable_lights;
 			utl::vector<light_id>							_non_cullable_owners;
+
+			// NOTE: these are tightly packed
+			utl::vector<hlsl::
 		};
 
 		class d3d12_light_buffer
