@@ -4,9 +4,10 @@
 namespace primal::math
 {
 	using namespace DirectX::SimpleMath;
-	constexpr float pi = DirectX::XM_PI;
-	constexpr float two_pi = DirectX::XM_2PI;	
-	constexpr float epsilon = 1e-5f;
+	constexpr f32 pi{ DirectX::XM_PI };
+	constexpr f32 half_pi{ pi * 0.5f };
+	constexpr f32 two_pi{ DirectX::XM_2PI };
+	constexpr f32 epsilon{ 1e-5f };
 #if defined(_WIN64)
 	//DirectX::SimpleMath
 	using DirectX::SimpleMath::Vector2;

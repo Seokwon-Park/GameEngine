@@ -334,7 +334,7 @@ namespace primal::input
 
 		constexpr math::v2 get_mouse_position(LPARAM lparam)
 		{
-			return { (float)((s16)(lparam & 0x0000ffff)), (float)((s16)(lparam >> 16)) };
+			return { (f32)((s16)(lparam & 0x0000ffff)), (f32)((s16)(lparam >> 16)) };
 		}
 	} // anonymous namespace
 
