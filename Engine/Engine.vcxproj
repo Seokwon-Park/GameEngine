@@ -89,8 +89,6 @@
     <ClCompile Include="Platform\Platform.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Graphics\Direct3D12\Shaders\Common.hlsli" />
-    <None Include="Graphics\Direct3D12\Shaders\CommonTypes.hlsli" />
     <None Include="packages.config" />
   </ItemGroup>
   <PropertyGroup Label="Globals">

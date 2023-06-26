@@ -71,7 +71,5 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
-    <None Include="Graphics\Direct3D12\Shaders\CommonTypes.hlsli" />
-    <None Include="Graphics\Direct3D12\Shaders\Common.hlsli" />
   </ItemGroup>
 </Project>
