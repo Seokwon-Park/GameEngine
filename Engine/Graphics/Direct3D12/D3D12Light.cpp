@@ -537,7 +537,7 @@ namespace primal::graphics::d3d12::light
 				light_owner& owner1{ _owners[_cullable_owners[index1]] };
 				light_owner& owner2{ _owners[_cullable_owners[index2]] };
 				assert(owner1.data_index == index1);
-				assert(owner1.data_index == index2);
+				assert(owner2.data_index == index2);
 				owner1.data_index = index2;
 				owner2.data_index = index1;
 
@@ -583,6 +583,8 @@ namespace primal::graphics::d3d12::light
 
 			utl::vector<u8>									_transform_flags_cache;
 			u32												_enabled_light_count{ 0 };
+
+			friend class d3d12_light_buffer;
 		};
 
 		class d3d12_light_buffer
@@ -593,9 +595,13 @@ namespace primal::graphics::d3d12::light
 			{
 				u32 sizes[light_buffer::count]{};
 				sizes[light_buffer::non_cullable_light] = set.non_cullable_light_count() * sizeof(hlsl::DirectionalLightParameters);
+				sizes[light_buffer::cullable_light] = set.cullable_light_count() * sizeof(hlsl::LightParameters);
+				sizes[light_buffer::culling_info] = set.cullable_light_count() * sizeof(hlsl::LightCullingLightInfo);
 
 				u32 current_sizes[light_buffer::count]{};
 				current_sizes[light_buffer::non_cullable_light] = _buffers[light_buffer::non_cullable_light].buffer.size();
+				current_sizes[light_buffer::cullable_light] = _buffers[light_buffer::cullable_light].buffer.size();
+				current_sizes[light_buffer::culling_info] = _buffers[light_buffer::culling_info].buffer.size();
 
 				if (current_sizes[light_buffer::non_cullable_light] < sizes[light_buffer::non_cullable_light])
 				{
@@ -604,7 +610,51 @@ namespace primal::graphics::d3d12::light
 				set.non_cullable_lights((hlsl::DirectionalLightParameters* const)_buffers[light_buffer::non_cullable_light].cpu_address,
 					_buffers[light_buffer::non_cullable_light].buffer.size());
 
-				// TODO: cullable lights
+				// Update cullable light buffers
+				bool buffers_resized{ false };
+				if (current_sizes[light_buffer::cullable_light] < sizes[light_buffer::cullable_light])
+				{
+					assert(current_sizes[light_buffer::culling_info] < sizes[light_buffer::culling_info]);
+					resize_buffer(light_buffer::cullable_light, sizes[light_buffer::cullable_light], frame_index);
+					resize_buffer(light_buffer::culling_info, sizes[light_buffer::culling_info], frame_index);
+					buffers_resized = true;
+				}
+				
+				bool all_lights_updated{ false };
+				if (buffers_resized || _current_light_set_key != light_set_key)
+				{
+					memcpy(_buffers[light_buffer::cullable_light].cpu_address, set._cullable_lights.data(), sizes[light_buffer::cullable_light]);
+					memcpy(_buffers[light_buffer::culling_info].cpu_address, set._culling_info.data(), sizes[light_buffer::culling_info]);
+					_current_light_set_key = light_set_key;
+					all_lights_updated = true;
+				}
+
+				assert(_current_light_set_key == light_set_key);
+				const u32 index_mask{ 1UL << frame_index };
+
+				if (all_lights_updated)
+				{
+					for (u32 i{ 0 }; i < set.cullable_light_count(); ++i)
+					{
+						set._dirty_bits[i] &= ~index_mask;
+					}
+				}
+				else
+				{
+					for (u32 i{ 0 }; i < set.cullable_light_count(); ++i)
+					{
+						if (set._dirty_bits[i] & index_mask)
+						{
+							assert(i * sizeof(hlsl::LightParameters) < sizes[light_buffer::cullable_light]);
+							assert(i * sizeof(hlsl::LightCullingLightInfo) < sizes[light_buffer::culling_info]);
+							u8* const light_dst{ _buffers[light_buffer::cullable_light].cpu_address + (i * sizeof(hlsl::LightParameters)) };
+							u8* const culling_dst{ _buffers[light_buffer::culling_info].cpu_address + (i * sizeof(hlsl::LightCullingLightInfo)) };
+							memcpy(light_dst, &set._cullable_lights[i], sizeof(hlsl::LightParameters));
+							memcpy(culling_dst, &set._culling_info[i], sizeof(hlsl::LightCullingLightInfo));
+							set._dirty_bits[i] &= ~index_mask;
+						}
+					}
+				}
 			}
 
 			constexpr void release()
@@ -649,10 +699,10 @@ namespace primal::graphics::d3d12::light
 			}
 
 			light_buffer _buffers[light_buffer::count];
-			u64 _curretn_light_set_key{ 0 };
+			u64 _current_light_set_key{ 0 };
 
 		};
-#undef CONSTEXPR
+
 
 		std::unordered_map<u64, light_set> light_sets;
 		d3d12_light_buffer light_buffers[frame_buffer_count];
@@ -678,6 +728,34 @@ namespace primal::graphics::d3d12::light
 			set.color(id, color);
 		}
 
+		CONSTEXPR void set_attenuation(light_set& set, light_id id, const void* const data, [[maybe_unused]] u32 size)
+		{
+			math::v3 attenuation{ *(math::v3*)data };
+			assert(sizeof(attenuation) == size);
+			set.color(id, attenuation);
+		}
+
+		CONSTEXPR void set_range(light_set& set, light_id id, const void* const data, [[maybe_unused]] u32 size)
+		{
+			f32 range{ *(f32*)data };
+			assert(sizeof(range) == size);
+			set.range(id, range);
+		}
+
+		void set_umbra(light_set& set, light_id id, const void* const data, [[maybe_unused]] u32 size)
+		{
+			f32 umbra{ *(f32*)data };
+			assert(sizeof(umbra) == size);
+			set.umbra(id, umbra);
+		}
+
+		void set_penumbra(light_set& set, light_id id, const void* const data, [[maybe_unused]] u32 size)
+		{
+			f32 penumbra{ *(f32*)data };
+			assert(sizeof(penumbra) == size);
+			set.penumbra(id, penumbra);
+		}
+
 
 		constexpr void get_is_enabled(light_set& set, light_id id, void* const data, [[maybe_unused]] u32 size)
 		{
@@ -698,6 +776,34 @@ namespace primal::graphics::d3d12::light
 			math::v3 *const color{ (math::v3* const)data };
 			assert(sizeof(math::v3) == size);
 			*color = set.color(id);
+		}
+
+		CONSTEXPR void get_attenuation(light_set& set, light_id id, void* const data, [[maybe_unused]] u32 size)
+		{
+			math::v3* const attenuation{ (math::v3* const)data };
+			assert(sizeof(math::v3) == size);
+			*attenuation= set.attenuation(id);
+		}
+
+		CONSTEXPR void get_range(light_set& set, light_id id, void* const data, [[maybe_unused]] u32 size)
+		{
+			f32* const range{ (f32* const)data };
+			assert(sizeof(f32) == size);
+			*range= set.range(id);
+		}
+
+		void get_umbra(light_set& set, light_id id, void* const data, [[maybe_unused]] u32 size)
+		{
+			f32* const umbra{ (f32* const)data };
+			assert(sizeof(f32) == size);
+			*umbra= set.umbra(id);
+		}
+
+		void get_penumbra(light_set& set, light_id id, void* const data, [[maybe_unused]] u32 size)
+		{
+			f32* const penumbra{ (f32* const)data };
+			assert(sizeof(f32) == size);
+			*penumbra= set.penumbra(id);
 		}
 
 		constexpr void get_type(light_set& set, light_id id, void* const data, [[maybe_unused]] u32 size)
@@ -725,6 +831,10 @@ namespace primal::graphics::d3d12::light
 			set_is_enabled,
 			set_intensity,
 			set_color,
+			set_attenuation,
+			set_range,
+			set_umbra,
+			set_penumbra,
 			dummy_set,
 			dummy_set,
 		};
@@ -736,11 +846,17 @@ namespace primal::graphics::d3d12::light
 			get_is_enabled,
 			get_intensity,
 			get_color,
+			get_attenuation,
+			get_range,
+			get_umbra,
+			get_penumbra,
 			get_type,
 			get_entity_id
 		};
 
 		static_assert(_countof(get_functions) == light_parameter::count);
+
+#undef CONSTEXPR
 
 	} // anonymous namespace
 
