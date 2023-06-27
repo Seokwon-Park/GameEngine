@@ -15,7 +15,7 @@ void ComputeGridFrustumsCS(uint3 DispatchThreadID : SV_DispatchThreadID)
     const uint y = DispatchThreadID.y;
     
     // Return if our thread ID is not in bounds of the grid
-    if (x >= ShaderParams.NumThreads.x || y > ShaderParams.NumThreads.y)
+    if (x >= ShaderParams.NumThreads.x || y >= ShaderParams.NumThreads.y)
     {
         return;
     }
@@ -42,11 +42,10 @@ void ComputeGridFrustumsCS(uint3 DispatchThreadID : SV_DispatchThreadID)
     Frustum frustum;
     // Left, right, top, bottom
     frustum.Planes[0] = ComputePlane(viewSpace[0], eyePos, viewSpace[2]);
-    frustum.Planes[0] = ComputePlane(viewSpace[3], eyePos, viewSpace[1]);
-    frustum.Planes[0] = ComputePlane(viewSpace[1], eyePos, viewSpace[0]);
-    frustum.Planes[0] = ComputePlane(viewSpace[2], eyePos, viewSpace[3]);
+    frustum.Planes[1] = ComputePlane(viewSpace[3], eyePos, viewSpace[1]);
+    frustum.Planes[2] = ComputePlane(viewSpace[1], eyePos, viewSpace[0]);
+    frustum.Planes[3] = ComputePlane(viewSpace[2], eyePos, viewSpace[3]);
     
     // Store the computed frustum in global memory form thread IDs that are in bounds of the grid.
     Frustums[x + (y * ShaderParams.NumThreads.x)] = frustum;
-
-}
+   }
