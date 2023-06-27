@@ -452,16 +452,7 @@ namespace primal::graphics::d3d12::light
 			f32 calculate_cone_radius(f32 range, f32 cos_penumbra)
 			{
 				const f32 sin_penumbra{ sqrt(1.f - cos_penumbra * cos_penumbra) };
-
-				if (cos_penumbra >= 0.707107f)
-				{
-					// if penumbra half angle is less than 45 degrees
-					return sin_penumbra * range;
-				}
-				else
-				{
-					return sin_penumbra * range;
-				}
+				return sin_penumbra * range;
 			}
 
 			void update_transform(u32 index)
@@ -530,43 +521,58 @@ namespace primal::graphics::d3d12::light
 			void swap_cullable_lights(u32 index1, u32 index2)
 			{
 				assert(index1 != index2);
-
-				//swap light parameter indices
 				assert(index1 < _cullable_owners.size());
 				assert(index2 < _cullable_owners.size());
-				light_owner& owner1{ _owners[_cullable_owners[index1]] };
-				light_owner& owner2{ _owners[_cullable_owners[index2]] };
-				assert(owner1.data_index == index1);
-				assert(owner2.data_index == index2);
-				owner1.data_index = index2;
-				owner2.data_index = index1;
-
-				// swap light parameters
 				assert(index1 < _cullable_lights.size());
 				assert(index2 < _cullable_lights.size());
-				std::swap(_cullable_lights[index1], _cullable_lights[index2]);
-
-				// swap culling info
 				assert(index1 < _culling_info.size());
 				assert(index2 < _culling_info.size());
-				std::swap(_culling_info[index1], _culling_info[index2]);
-
-				// swap entity ids
 				assert(index1 < _cullable_entity_ids.size());
 				assert(index2 < _cullable_entity_ids.size());
-				std::swap(_cullable_entity_ids[index1], _cullable_entity_ids[index2]);
+				assert(id::is_valid(_cullable_owners[index1]) || id::is_valid(_cullable_owners[index2]));
 
-				// swap owner indices
-				std::swap(_cullable_owners[index1], _cullable_owners[index2]);
+				if (!id::is_valid(_cullable_owners[index2]))
+				{
+					std::swap(index1, index2);
+				}
 
-				assert(_owners[_cullable_owners[index1]].entity_id == _cullable_entity_ids[index1]);
-				assert(_owners[_cullable_owners[index2]].entity_id == _cullable_entity_ids[index2]);
+				if (!id::is_valid(_cullable_owners[index1]))
+				{
+					light_owner& owner2{ _owners[_cullable_owners[index2]] };
+					assert(owner2.data_index == index2);
+					owner2.data_index = index1;
 
-				// set dirty bits
-				assert(index1 < _dirty_bits.size());
-				assert(index2 < _dirty_bits.size());
-				_dirty_bits[index1] = dirty_bits_mask;
-				_dirty_bits[index2] = dirty_bits_mask;
+					_cullable_lights[index1] =  _cullable_lights[index2];
+					_culling_info[index1] =  _culling_info[index2];
+					_cullable_entity_ids[index1] =  _cullable_entity_ids[index2];
+					std::swap(_cullable_owners[index1], _cullable_owners[index2]);
+					_dirty_bits[index1] = dirty_bits_mask;
+					assert(_owners[_cullable_owners[index1]].entity_id == _cullable_entity_ids[index1]);
+					assert(id::is_valid(_cullable_owners[index2]));
+				}
+				else
+				{
+					light_owner& owner1{ _owners[_cullable_owners[index1]] };
+					light_owner& owner2{ _owners[_cullable_owners[index2]] };
+					assert(owner1.data_index == index1);
+					assert(owner2.data_index == index2);
+					owner1.data_index = index2;
+					owner2.data_index = index1;
+
+					std::swap(_cullable_lights[index1], _cullable_lights[index2]);
+					std::swap(_culling_info[index1], _culling_info[index2]);
+					std::swap(_cullable_entity_ids[index1], _cullable_entity_ids[index2]);
+					std::swap(_cullable_owners[index1], _cullable_owners[index2]);
+
+					assert(_owners[_cullable_owners[index1]].entity_id == _cullable_entity_ids[index1]);
+					assert(_owners[_cullable_owners[index2]].entity_id == _cullable_entity_ids[index2]);
+
+					// set dirty bits
+					assert(index1 < _dirty_bits.size());
+					assert(index2 < _dirty_bits.size());
+					_dirty_bits[index1] = dirty_bits_mask;
+					_dirty_bits[index2] = dirty_bits_mask;
+				}
 			}
 
 			// NOTE: these are not tightly packed
