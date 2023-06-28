@@ -673,6 +673,8 @@ namespace primal::graphics::d3d12::light
 			}
 
 			constexpr D3D12_GPU_VIRTUAL_ADDRESS non_cullable_lights() const { return _buffers[light_buffer::non_cullable_light].buffer.gpu_address(); }
+			constexpr D3D12_GPU_VIRTUAL_ADDRESS cullable_lights() const { return _buffers[light_buffer::cullable_light].buffer.gpu_address(); }
+			constexpr D3D12_GPU_VIRTUAL_ADDRESS culling_info() const { return _buffers[light_buffer::culling_info].buffer.gpu_address(); }
 		private:
 			struct light_buffer
 			{
@@ -929,15 +931,32 @@ namespace primal::graphics::d3d12::light
 
 
 	}
+
 	D3D12_GPU_VIRTUAL_ADDRESS non_cullable_light_buffer(u32 frame_index)
 	{
 		const d3d12_light_buffer& light_buffer{ light_buffers[frame_index] };
 		return light_buffer.non_cullable_lights();
 	}
+	D3D12_GPU_VIRTUAL_ADDRESS cullable_light_buffer(u32 frame_index)
+	{
+		const d3d12_light_buffer& light_buffer{ light_buffers[frame_index] };
+		return light_buffer.cullable_lights();
+	}	
+	D3D12_GPU_VIRTUAL_ADDRESS culling_info_buffer(u32 frame_index)
+	{
+		const d3d12_light_buffer& light_buffer{ light_buffers[frame_index] };
+		return light_buffer.culling_info();
+	}
+
 	u32 non_cullable_light_count(u64 light_set_key)
 	{
 		assert(light_sets.count(light_set_key));
 		return light_sets[light_set_key].non_cullable_light_count();
+	}
+	u32 cullable_light_count(u64 light_set_key)
+	{
+		assert(light_sets.count(light_set_key));
+		return light_sets[light_set_key].cullable_light_count();
 	}
 }
 

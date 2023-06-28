@@ -1,5 +1,8 @@
 #include "Common.hlsli"
 
+// NOTE: this constant is larger than max_lights_per_tile in light culling module (defined to be 256).
+//       This is because 256 is the maximum for the average number for lights per tile, whereas
+//       this constant is the maximum lights per tile.
 static const uint MaxLightsPerGroup = 1024;
 
 groupshared uint _minDepthVS;                        // tile's minimum depth in view-space
@@ -54,13 +57,13 @@ void CullLightsCS(ComputeShaderInput csIn)
     // LIGHT CULLING SECTION
     GroupMemoryBarrierWithGroupSync();
     
-    const uint gridIndex = csIn.GroupID.x + (csIn.GroupID.y, ShaderParams.NumThreadGroups.x);
+    const uint gridIndex = csIn.GroupID.x + (csIn.GroupID.y * ShaderParams.NumThreadGroups.x);
     const Frustum frustum = Frustums[gridIndex];
     // Negate view-space min/max again.
     const float minDepthVS = -asfloat(_minDepthVS);
     const float maxDepthVS = -asfloat(_maxDepthVS);
     
-    for (i = 0; i < ShaderParams.NumLights; i+= TILE_SIZE*TILE_SIZE)
+    for (i = csIn.GroupIndex; i < ShaderParams.NumLights; i+= TILE_SIZE*TILE_SIZE)
     {
         const LightCullingLightInfo light = Lights[i];
         const float3 lightPositionVS = mul(GlobalData.View, float4(light.Position, 1.f)).xyz;
@@ -95,7 +98,7 @@ void CullLightsCS(ComputeShaderInput csIn)
     // UPDATE LIGHT GRID SECTION
     GroupMemoryBarrierWithGroupSync();
     
-    const uint lightCount = min(_lightCount, MaxLightsPerGroup);
+    const uint lightCount = min(_lightCount, MaxLightsPerGroup-1);
     
     if (csIn.GroupIndex == 0)
     {
@@ -106,7 +109,7 @@ void CullLightsCS(ComputeShaderInput csIn)
     // UPDATE LIGHT INDEX LIST SECTION
     GroupMemoryBarrierWithGroupSync();
     
-    for (i = 0; i < lightCount; i+=TILE_SIZE*TILE_SIZE)
+    for (i = csIn.GroupIndex; i < lightCount; i += TILE_SIZE * TILE_SIZE)
     {
         LightIndexList_Opaque[_lightIndexStartOffset + i] = _lightIndexList[i];
     }

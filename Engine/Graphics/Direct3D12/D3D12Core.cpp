@@ -366,6 +366,27 @@ namespace primal::graphics::d3d12::core
 		DXCall(hr = D3D12CreateDevice(main_adapter.Get(), max_feature_level, IID_PPV_ARGS(&main_device)));
 		if (FAILED(hr)) return failed_init();
 
+#ifdef _DEBUG
+		{
+			ComPtr<ID3D12InfoQueue> info_queue;
+			DXCall(main_device->QueryInterface(IID_PPV_ARGS(&info_queue)));
+
+			D3D12_MESSAGE_ID disabled_messages[]
+			{
+				D3D12_MESSAGE_ID_CLEARUNORDEREDACCESSVIEW_INCOMPATIBLE_WITH_STRUCTURED_BUFFERS,
+			};
+
+			D3D12_INFO_QUEUE_FILTER filter{};
+			filter.DenyList.NumIDs = _countof(disabled_messages);
+			filter.DenyList.pIDList = &disabled_messages[0];
+			info_queue->AddStorageFilterEntries(&filter);
+
+			info_queue->SetBreakOnSeverity(D3D12_MESSAGE_SEVERITY_CORRUPTION, false);
+			info_queue->SetBreakOnSeverity(D3D12_MESSAGE_SEVERITY_WARNING, false);
+			info_queue->SetBreakOnSeverity(D3D12_MESSAGE_SEVERITY_ERROR, false);
+		}
+#endif // _DEBUG
+
 		bool result{ true };
 		result &= rtv_desc_heap.initialize(512, false);
 		result &= dsv_desc_heap.initialize(512, false);

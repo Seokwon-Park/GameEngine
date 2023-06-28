@@ -119,7 +119,7 @@ PixelOut TestShaderPS(in VertexOut psIn)
         float specular = pow(max(dot(viewDir, reflection), 0.f), 16) * 0.5f;
         
         float3 lightColor = light.Color * light.Intensity;
-        color += (diffuse + specular) * lightColor;
+        color += 0.2f *(diffuse + specular) * lightColor;
     }
     
     float3 ambient = 10 / 255.f;
