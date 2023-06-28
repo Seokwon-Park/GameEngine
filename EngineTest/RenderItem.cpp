@@ -134,9 +134,9 @@ void create_render_items()
 	// 2) load shaders for that material
 	auto _4 = std::thread{ [] {load_shaders(); } };
 
-	lab_entity_id = create_one_game_entity({ -2.f, 0.5f, 3.f }, { 0.f, 0.f, math::pi / 2 }, "fan_script").get_id();
-	fan_entity_id = create_one_game_entity({ 2.f, 0.5f, 3.f}, {0.f, 0.f, math::pi/2}, "rotator_script").get_id();
-	int_entity_id = create_one_game_entity({ 0.0f, 0.5f, 3.f }, {0.f, 0.f, math::pi / 2 }, "wibbly_wobbly_script").get_id();
+	lab_entity_id = create_one_game_entity({ -1.f, 0.5f, 1.f }, { 0.f, 0.f, math::pi / 2 }, "fan_script").get_id();
+	fan_entity_id = create_one_game_entity({ 1.f, 0.5f, 1.f}, {0.f, 0.f, math::pi/2}, "rotator_script").get_id();
+	int_entity_id = create_one_game_entity({ 0.0f, 0.5f, 1.f }, {0.f, 0.f, math::pi / 2 }, "wibbly_wobbly_script").get_id();
 
 	_1.join();
 	_2.join();

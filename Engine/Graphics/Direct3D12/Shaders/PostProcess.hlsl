@@ -96,8 +96,7 @@ float4 PostProcessPS(in noperspective float4 Position : SV_Position,
     
     return float4((float3) c, 1.f);
 #elif 1 // LIGHT GRID OPAQUE
-    return Heatmap(LightGridOpaque, Position.xy, 0.75f);
-    
+    return Heatmap(LightGridOpaque, Position.xy, 0.75f);    
 #elif 0 // SCENE
     Texture2D gpassMain = ResourceDescriptorHeap[ShaderParams.GPassMainBufferIndex];
     return float4(gpassMain[Position.xy].xyz, 1.f);

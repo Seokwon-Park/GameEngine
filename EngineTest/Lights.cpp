@@ -107,7 +107,7 @@ void generate_lights()
 
 #if !RANDOM_LIGHTS
 	create_light({ 0,-3,0 }, {}, graphics::light::point, left_set);
-	create_light({ 0,0,1 }, {}, graphics::light::point, left_set);
+	create_light({ 0,0.2,1 }, {}, graphics::light::point, left_set);
 	create_light({ 0,3,2.5f }, {}, graphics::light::point, left_set);
 	create_light({ 0,0,7 }, {0, 3.14f, 0}, graphics::light::spot, left_set);
 #else
