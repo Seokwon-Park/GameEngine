@@ -23,7 +23,7 @@ uint GetGridIndex(float2 posXY, float viewWidth)
 float4 PostProcessPS(in noperspective float4 Position : SV_Position,
                      in noperspective float2 UV : TEXCOORD) : SV_Target0
 {
-#if 0 // FRUSTUM VISUALIZATION
+#if 1 // FRUSTUM VISUALIZATION
     const float w = GlobalData.ViewWidth;
     const uint gridIndex = GetGridIndex(Position.xy, w);
     const Frustum f = Frustums[gridIndex];
@@ -47,7 +47,7 @@ float4 PostProcessPS(in noperspective float4 Position : SV_Position,
     }
     
     Texture2D gpassMain = ResourceDescriptorHeap[ShaderParams.GPassMainBufferIndex];
-    color = lerp(gpassMain[Position.xy].xyz, color, 1.f);
+    color = lerp(gpassMain[Position.xy].xyz, color, 0.5f);
     return float4(color, 1.f);
     
 #elif 0   // INDEX VISUALIZATION
@@ -68,7 +68,7 @@ float4 PostProcessPS(in noperspective float4 Position : SV_Position,
     
     return float4((float3) c, 1.f);
 
-#elif 1 // SCENE
+#elif 0 // SCENE
     Texture2D gpassMain = ResourceDescriptorHeap[ShaderParams.GPassMainBufferIndex];
     return float4(gpassMain[Position.xy].xyz, 1.f);
 #endif

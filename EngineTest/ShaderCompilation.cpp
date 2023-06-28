@@ -28,10 +28,10 @@ namespace
 
 	constexpr engine_shader_info engine_shader_files[]
 	{
-		engine_shader::fullscreen_triangle_vs, {"FullScreenTriangle.hlsl", "FullScreenTriangleVS" , shader_type::vertex},
-		engine_shader::fill_color_ps, {"FillColor.hlsl", "FillColorPS" , shader_type::pixel},
-		engine_shader::post_process_ps,{"PostProcess.hlsl", "PostProcessPS" , shader_type::pixel},
-		engine_shader::grid_frustums_cs,{"GridFrustums.hlsl", "ComputeGridFrustumsCS" , shader_type::compute},
+		{engine_shader::fullscreen_triangle_vs, {"FullScreenTriangle.hlsl", "FullScreenTriangleVS" , shader_type::vertex}},
+		{engine_shader::fill_color_ps, {"FillColor.hlsl", "FillColorPS" , shader_type::pixel}},
+		{engine_shader::post_process_ps,{"PostProcess.hlsl", "PostProcessPS" , shader_type::pixel}},
+		{engine_shader::grid_frustums_cs,{"GridFrustums.hlsl", "ComputeGridFrustumsCS" , shader_type::compute}},
 	};
 
 	static_assert(_countof(engine_shader_files) == engine_shader::count);
@@ -292,7 +292,7 @@ bool compile_shaders()
 	shader_compiler compiler{};
 	utl::vector<dxc_compiled_shader> shaders;
 	std::filesystem::path full_path{};
-
+		
 	// compile shaders and them together in a buffer in the same order of compilation.
 	for (u32 i{ 0 }; i < engine_shader::count; ++i)
 	{
