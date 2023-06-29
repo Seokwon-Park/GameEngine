@@ -17,7 +17,7 @@ struct GlobalShaderData
     float       ViewHeight;
     
     uint       NumDirectionalLights;    
-    float       DeltaTime;
+    float      DeltaTime;
 };
 
 struct PerObjectData

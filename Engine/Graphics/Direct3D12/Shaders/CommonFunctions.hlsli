@@ -65,8 +65,8 @@ bool ConeInsideFrustum(Cone cone, Frustum frustum, float zNear, float zFar)
 {
     bool result = true;
 
-    Plane nearPlane = { float3(0, 0, -1), -zNear };
-    Plane farPlane = { float3(0, 0, 1), zFar };
+    Plane nearPlane = { float3(0, 0, -1.f), -zNear };
+    Plane farPlane = { float3(0, 0, 1.f), zFar };
 
     // First check the near and far clipping planes.
     if (ConeInsidePlane(cone, nearPlane) || ConeInsidePlane(cone, farPlane))

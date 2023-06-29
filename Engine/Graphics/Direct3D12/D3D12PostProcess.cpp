@@ -91,8 +91,7 @@ namespace primal::graphics::d3d12::fx
 		const id::id_type light_culling_id{ d3d12_info.light_culling_id };
 
 		cmd_list->SetGraphicsRootSignature(fx_root_sig);
-		cmd_list->SetPipelineState(fx_pso);
-		
+		cmd_list->SetPipelineState(fx_pso);		
 		using idx = fx_root_param_indices;
 		cmd_list->SetGraphicsRootConstantBufferView(idx::global_shader_data, d3d12_info.global_shader_data);
 		cmd_list->SetGraphicsRoot32BitConstant(idx::root_constants, gpass::main_buffer().srv().index, 0);

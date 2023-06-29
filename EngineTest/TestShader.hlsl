@@ -110,7 +110,7 @@ float3 CalculateLighting(float3 N, float3 L, float3 V, float3 lightColor)
     {
         const float3 R = reflect(-L, N);
         const float VoR = max(dot(V, R), 0.f);
-        specular = NoL * pow(VoR, 4.f) * 0.5f;
+        specular = saturate(NoL * pow(VoR, 4.f) * 0.5f);
     }
     
     return (max(0.f, NoL) + specular) * lightColor;
@@ -126,7 +126,7 @@ float3 PointLight(float3 N, float3 worldPosition, float3 V, LightParameters ligh
     {
         const float dRcp = rsqrt(dSq);
         L *= dRcp;
-        color = CalculateLighting(N, L, V, light.Color * light.Intensity * 0.02f);
+        color = CalculateLighting(N, L, V, light.Color * light.Intensity * 0.2f);
     }
 #else
 #endif
@@ -145,7 +145,7 @@ float3 SpotLight(float3 N, float3 worldPosition, float3 V, LightParameters light
         L *= dRcp;
         const float CosAngleToLight = saturate(dot(-L, light.Direction));
         const float angularAttenuation = float(light.CosPenumbra < CosAngleToLight);
-        color = CalculateLighting(N, L, V, light.Color * light.Intensity * angularAttenuation * 0.02f);
+        color = CalculateLighting(N, L, V, light.Color * light.Intensity * angularAttenuation * 0.2f);
     }
 #else
 #endif
@@ -169,8 +169,8 @@ PixelOut TestShaderPS(in VertexOut psIn)
     float3 viewDir = normalize(GlobalData.CameraPosition - psIn.WorldPosition);
     
     float3 color = 0;
-    
-    for (uint i = 0; i < GlobalData.NumDirectionalLights; ++i)
+    uint i = 0;
+    for (i = 0; i < GlobalData.NumDirectionalLights; ++i)
     {
         DirectionalLightParameters light = DirectionalLights[i];
         
@@ -180,7 +180,7 @@ PixelOut TestShaderPS(in VertexOut psIn)
             lightDirection = GlobalData.CameraDirection;
         }
         
-        color += 0.02f * CalculateLighting(normal, -lightDirection, viewDir, light.Color * light.Intensity);
+        color += CalculateLighting(normal, -lightDirection, viewDir, light.Color * light.Intensity);
     }
     
     const uint gridIndex = GetGridIndex(psIn.HomogeneousPosition.xy, GlobalData.ViewWidth);
@@ -204,7 +204,7 @@ PixelOut TestShaderPS(in VertexOut psIn)
 
     }
     
-    float3 ambient = 0 / 255.f;
+    float3 ambient = 10.f / 255.f;
     psOut.Color = saturate(float4(color + ambient, 1.f));
     
     return psOut;

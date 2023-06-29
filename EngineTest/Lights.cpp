@@ -3,7 +3,7 @@
 #include "EngineAPI/TransformComponent.h"
 #include "Graphics/Renderer.h"
 
-#define RANDOM_LIGHTS 1
+#define RANDOM_LIGHTS 0
 
 using namespace primal;
 
@@ -106,10 +106,10 @@ void generate_lights()
 	lights.emplace_back(graphics::create_light(info));
 
 #if !RANDOM_LIGHTS
-	create_light({ 0,-3,0 }, {}, graphics::light::point, left_set);
-	create_light({ 0,0.2,1 }, {}, graphics::light::point, left_set);
-	create_light({ 0,3,2.5f }, {}, graphics::light::point, left_set);
-	create_light({ 0,0,7 }, {0, 3.14f, 0}, graphics::light::spot, left_set);
+	create_light({ 0, -3.f, 0 }, {}, graphics::light::point, left_set);
+	create_light({ 0, 0.2f, 1.f }, {}, graphics::light::point, left_set);
+	create_light({ 0, 3.f, 2.5f }, {}, graphics::light::point, left_set);
+	create_light({ 0, 0, 7 }, { 0, 3.14f, 0 }, graphics::light::spot, left_set);
 #else
 	srand(37);
 
@@ -122,7 +122,7 @@ void generate_lights()
 		{
 			for (s32 z{ -dim }; z < dim; ++z)
 			{
-				create_light({ (f32)(x * scale.x), (f32)(y* scale.y), (f32)(z * scale.z) },
+				create_light({ (f32)(x * scale.x), (f32)(y * scale.y), (f32)(z * scale.z) },
 					{ 3.14f, random(), 0.f }, random() > 0.5f ? graphics::light::spot : graphics::light::point, left_set);
 				create_light({ (f32)(x * scale.x), (f32)(y * scale.y), (f32)(z * scale.z) },
 					{ 3.14f, random(), 0.f }, random() > 0.5f ? graphics::light::spot : graphics::light::point, right_set);

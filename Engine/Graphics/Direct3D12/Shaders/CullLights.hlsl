@@ -19,7 +19,7 @@ StructuredBuffer<LightCullingLightInfo> Lights : register(t1 , space0);
 
 RWStructuredBuffer<uint> LightIndexCounter : register(u0, space0);
 RWStructuredBuffer<uint2> LightGrid_Opaque: register(u1, space0);
-RWStructuredBuffer<uint2> LightIndexList_Opaque: register(u3, space0);
+RWStructuredBuffer<uint> LightIndexList_Opaque: register(u3, space0);
 
 // Implementation of light culling frustums shader is based on
 // "Forward vs Deferred vs Forward+ Rendering with DirectX 11" (2015) by Jeremisah van Oosten.
@@ -63,7 +63,7 @@ void CullLightsCS(ComputeShaderInput csIn)
     const float minDepthVS = -asfloat(_minDepthVS);
     const float maxDepthVS = -asfloat(_maxDepthVS);
     
-    for (i = csIn.GroupIndex; i < ShaderParams.NumLights; i+= TILE_SIZE*TILE_SIZE)
+    for (i = csIn.GroupIndex; i < ShaderParams.NumLights; i+= TILE_SIZE * TILE_SIZE)
     {
         const LightCullingLightInfo light = Lights[i];
         const float3 lightPositionVS = mul(GlobalData.View, float4(light.Position, 1.f)).xyz;
@@ -98,7 +98,7 @@ void CullLightsCS(ComputeShaderInput csIn)
     // UPDATE LIGHT GRID SECTION
     GroupMemoryBarrierWithGroupSync();
     
-    const uint lightCount = min(_lightCount, MaxLightsPerGroup-1);
+    const uint lightCount = min(_lightCount, MaxLightsPerGroup);
     
     if (csIn.GroupIndex == 0)
     {
@@ -113,5 +113,4 @@ void CullLightsCS(ComputeShaderInput csIn)
     {
         LightIndexList_Opaque[_lightIndexStartOffset + i] = _lightIndexList[i];
     }
-    
 }
