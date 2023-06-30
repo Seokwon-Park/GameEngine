@@ -54,14 +54,14 @@ namespace
 		if (type == graphics::light::point)
 		{
 			info.point_params.range = 1.f;
-			info.point_params.attenuation = { 1,1,1 };
+			info.point_params.attenuation = { 1.f,1.f,1.f };
 		}
 		else if (type == graphics::light::spot)
 		{
 			info.spot_params.range = 2.f;
 			info.spot_params.umbra = 0.1f* math::pi;
 			info.spot_params.penumbra = info.spot_params.umbra + (0.1f * math::pi);
-			info.spot_params.attenuation = { 1,1,1 };
+			info.spot_params.attenuation = { 1.f,1.f,1.f };
 		}
 #endif
 
@@ -106,10 +106,10 @@ void generate_lights()
 	lights.emplace_back(graphics::create_light(info));
 
 #if !RANDOM_LIGHTS
-	create_light({ 0, -3.f, 0 }, {}, graphics::light::point, left_set);
-	create_light({ 0, 0.2f, 1.f }, {}, graphics::light::point, left_set);
-	create_light({ 0, 3.f, 2.5f }, {}, graphics::light::point, left_set);
-	create_light({ 0, 0, 7 }, { 0, 3.14f, 0 }, graphics::light::spot, left_set);
+	create_light({ 4.2f, 0.5f, 0 }, {}, graphics::light::point, left_set);
+	create_light({ -2.3f, 0.5f, 1.f }, {}, graphics::light::point, left_set);
+	create_light({ 0.f, 0.5f, 2.5f }, {}, graphics::light::point, left_set);
+	create_light({ 2.f, 0, 7 }, { 0, 3.14f, 0 }, graphics::light::spot, left_set);
 #else
 	srand(37);
 

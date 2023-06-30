@@ -204,7 +204,7 @@ PixelOut TestShaderPS(in VertexOut psIn)
 
     }
     
-    float3 ambient = 10.f / 255.f;
+    float3 ambient = 0.f / 255.f;
     psOut.Color = saturate(float4(color + ambient, 1.f));
     
     return psOut;

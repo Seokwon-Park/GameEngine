@@ -150,7 +150,7 @@ namespace primal::graphics::d3d12::delight
 			const math::u32v2 tile_count
 			{
 				(u32)math::align_size_up<tile_size>(culler.view_width) / tile_size,
-				(u32)math::align_size_up<tile_size>(culler.view_height) / tile_size,
+				(u32)math::align_size_up<tile_size>(culler.view_height) / tile_size
 			};
 
 			culler.frustum_count = tile_count.x * tile_count.y;
@@ -170,7 +170,6 @@ namespace primal::graphics::d3d12::delight
 				params.NumThreads.y = tile_count.y * tile_size;
 				params.NumThreadGroups = tile_count;
 			}
-
 
 			resize_buffers(culler);
 		}

@@ -369,7 +369,7 @@ void engine_test::run()
 {
 	static u32 counter{ 0 };
 	static u32 light_set_key{ 0 };
-	++counter;
+	//++counter;
 	//if ((counter % 90) == 0) light_set_key = (light_set_key + 1) % 2;
 
 	timer.begin();

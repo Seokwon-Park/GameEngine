@@ -103,7 +103,7 @@ void CullLightsCS(ComputeShaderInput csIn)
     if (csIn.GroupIndex == 0)
     {
         InterlockedAdd(LightIndexCounter[0], lightCount, _lightIndexStartOffset);
-        LightGrid_Opaque[gridIndex] = uint2(_lightIndexStartOffset, lightCount);
+        LightGrid_Opaque[gridIndex] = uint2(_lightIndexStartOffset, 10);
     }
     
     // UPDATE LIGHT INDEX LIST SECTION

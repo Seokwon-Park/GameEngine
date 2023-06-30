@@ -157,7 +157,7 @@ namespace primal::graphics::d3d12::light
 				// Update position and direction of cullable lights
 
 				const u32 count{ _enabled_light_count };
-				if (!_enabled_light_count) return;
+				if (!count) return;
 
 				assert(_cullable_entity_ids.size() >= count);
 				_transform_flags_cache.resize(count);
@@ -280,6 +280,7 @@ namespace primal::graphics::d3d12::light
 				assert(owner.type != graphics::light::directional);
 				assert(index < _cullable_lights.size());
 				_cullable_lights[index].Range = range;
+				_culling_info[index].Range = range;
 				_dirty_bits[index] = dirty_bits_mask;
 
 				if (owner.type == graphics::light::spot)
@@ -362,7 +363,7 @@ namespace primal::graphics::d3d12::light
 				const light_owner& owner{ _owners[id] };
 				const u32 index{ owner.data_index };
 				assert(_owners[_cullable_owners[index]].data_index == index);
-				assert(owner.type == graphics::light::directional);
+				assert(owner.type != graphics::light::directional);
 				assert(index < _cullable_lights.size());
 				return _cullable_lights[index].Attenuation;
 			}
@@ -372,7 +373,7 @@ namespace primal::graphics::d3d12::light
 				const light_owner& owner{ _owners[id] };
 				const u32 index{ owner.data_index };
 				assert(_owners[_cullable_owners[index]].data_index == index);
-				assert(owner.type == graphics::light::directional);
+				assert(owner.type != graphics::light::directional);
 				assert(index < _cullable_lights.size());
 				return _cullable_lights[index].Range;
 			}

@@ -330,6 +330,7 @@ namespace primal::graphics::d3d12::core
 		if (main_device) shutdown();
 
 		u32 dxgi_factory_flags{ 0 };
+
 #ifdef _DEBUG
 		// enable debugging layer. requires "graphics tools" optional feature
 		{
@@ -337,7 +338,7 @@ namespace primal::graphics::d3d12::core
 			if (SUCCEEDED(D3D12GetDebugInterface(IID_PPV_ARGS(&debug_interface))))
 			{
 				debug_interface->EnableDebugLayer();
-#if 1
+#if 0
 #pragma message("WARNING: GPU_based validation is enabled. This will considerably slow down the renderer!")
 				debug_interface->SetEnableGPUBasedValidation(1);
 #endif
