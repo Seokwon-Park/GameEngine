@@ -3,7 +3,7 @@
 #include "EngineAPI/TransformComponent.h"
 #include "Graphics/Renderer.h"
 
-#define RANDOM_LIGHTS 0
+#define RANDOM_LIGHTS 1
 
 using namespace primal;
 

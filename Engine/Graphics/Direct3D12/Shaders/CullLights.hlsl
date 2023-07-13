@@ -98,12 +98,12 @@ void CullLightsCS(ComputeShaderInput csIn)
     // UPDATE LIGHT GRID SECTION
     GroupMemoryBarrierWithGroupSync();
     
-    const uint lightCount = min(_lightCount, MaxLightsPerGroup);
+    const uint lightCount = min(_lightCount, MaxLightsPerGroup-1);
     
     if (csIn.GroupIndex == 0)
     {
         InterlockedAdd(LightIndexCounter[0], lightCount, _lightIndexStartOffset);
-        LightGrid_Opaque[gridIndex] = uint2(_lightIndexStartOffset, 10);
+        LightGrid_Opaque[gridIndex] = uint2(_lightIndexStartOffset, lightCount);
     }
     
     // UPDATE LIGHT INDEX LIST SECTION

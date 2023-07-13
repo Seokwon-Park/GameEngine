@@ -741,7 +741,7 @@ namespace primal::graphics::d3d12::light
 		{
 			math::v3 attenuation{ *(math::v3*)data };
 			assert(sizeof(attenuation) == size);
-			set.color(id, attenuation);
+			set.attenuation(id, attenuation);
 		}
 
 		CONSTEXPR void set_range(light_set& set, light_id id, const void* const data, [[maybe_unused]] u32 size)
