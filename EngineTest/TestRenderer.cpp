@@ -369,7 +369,7 @@ void engine_test::run()
 {
 	static u32 counter{ 0 };
 	static u32 light_set_key{ 0 };
-	//++counter;
+	++counter;
 	//if ((counter % 90) == 0) light_set_key = (light_set_key + 1) % 2;
 
 	timer.begin();
@@ -379,7 +379,7 @@ void engine_test::run()
 	{
 		if (_surfaces[i].surface.surface.is_valid())
 		{
-			f32 thresholds[3]{ 10 };
+			f32 thresholds[3]{};
 
 			id::id_type render_items[3]{};
 			get_render_items(&render_items[0], 3);
