@@ -350,7 +350,7 @@ void test_shutdown()
 
 	if (id::is_valid(model_id))
 	{
-		content::destory_resource(model_id, content::asset_type::mesh);
+		content::destroy_resource(model_id, content::asset_type::mesh);
 	}
 	for (u32 i{ 0 }; i < _countof(_surfaces); ++i)
 	{

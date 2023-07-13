@@ -108,7 +108,7 @@ namespace
 			}
 			if (id::is_valid(model_id))
 			{
-				content::destory_resource(model_id, content::asset_type::mesh);
+				content::destroy_resource(model_id, content::asset_type::mesh);
 			}
 		}
 	}
@@ -167,7 +167,7 @@ void destroy_render_items()
 	// remove material
 	if (id::is_valid(mtl_id))
 	{
-		content::destory_resource(mtl_id, content::asset_type::material);
+		content::destroy_resource(mtl_id, content::asset_type::material);
 	}
 
 	// remove shaders and textures

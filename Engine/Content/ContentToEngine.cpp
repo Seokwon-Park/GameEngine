@@ -301,7 +301,7 @@ namespace primal::content
 		return id;
 	}
 
-	void destory_resource(id::id_type id, asset_type::type type)
+	void destroy_resource(id::id_type id, asset_type::type type)
 	{
 		assert(id::is_valid(id));
 		switch (type)

@@ -327,7 +327,7 @@ namespace primal::graphics::d3d12::light
 				return _owners[id].is_enabled;
 			}
 
-			constexpr f32 intensity(light_id id)
+			constexpr f32 intensity(light_id id) const
 			{
 				const light_owner& owner{ _owners[id] };
 				const u32 index{ owner.data_index };
@@ -503,7 +503,7 @@ namespace primal::graphics::d3d12::light
 			CONSTEXPR void add_light_culling_info(const light_init_info& info, u32 index)
 			{
 				using graphics::light;
-				assert(info.type != light::directional && index < _cullable_lights.size());
+				assert(info.type != light::directional && index < _culling_info.size());
 
 				hlsl::LightParameters& params{ _cullable_lights[index] };
 				assert(params.Type == info.type);
