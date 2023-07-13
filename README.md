@@ -26,4 +26,4 @@ C:\Program Files\Autodesk\FBX\FBX SDK\2020.2\include
 + c#부분 코드 완전 이해 하기
 + 모르겠다 그냥..
 + 주말 귀찮아서 잡초심기용 커밋1, 2, 3, 4, 5
-  
++ lighting까지 다봤는데 문제 아직 못고침
