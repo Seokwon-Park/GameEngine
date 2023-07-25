@@ -180,7 +180,7 @@ PixelOut TestShaderPS(in VertexOut psIn)
             lightDirection = GlobalData.CameraDirection;
         }
         
-        color += CalculateLighting(normal, -lightDirection, viewDir, light.Color * light.Intensity);
+        color +=  0.1f*  CalculateLighting(normal, -lightDirection, viewDir, light.Color * light.Intensity);
     }
     
     const uint gridIndex = GetGridIndex(psIn.HomogeneousPosition.xy, GlobalData.ViewWidth);

@@ -119,15 +119,15 @@ namespace primal::graphics::d3d12
 		assert(!_buffer && info.size && info.alignment);
 		_size = (u32)math::align_size_up(info.size, info.alignment);
 		_buffer = d3dx::create_buffer(info.data, _size, is_cpu_accessible, info.initial_state, info.flags,
-									  info.heap, info.allocation_info.Offset);
+			info.heap, info.allocation_info.Offset);
 		_gpu_address = _buffer->GetGPUVirtualAddress();
 		NAME_D3D12_OBJECT_INDEXED(_buffer, _size, L"D3D12 Buffer - size");
 	}
-	 
+
 	void d3d12_buffer::release()
 	{
 		core::deferred_release(_buffer);
-		_gpu_address = 0; 
+		_gpu_address = 0;
 		_size = 0;
 	}
 
@@ -145,47 +145,42 @@ namespace primal::graphics::d3d12
 	u8* const constant_buffer::allocate(u32 size)
 	{
 		std::lock_guard lock{ _mutex };
-		const u32 aligned_size{(u32)d3dx::align_size_for_constant_buffer(size)};
-		assert(_cpu_offset+ aligned_size <= _buffer.size());
+		const u32 aligned_size{ (u32)d3dx::align_size_for_constant_buffer(size) };
+		assert(_cpu_offset + aligned_size <= _buffer.size());
 		if (_cpu_offset + aligned_size <= _buffer.size())
 		{
 			u8* const address{ _cpu_address + _cpu_offset };
 			_cpu_offset += aligned_size;
-			return address; 
+			return address;
 		}
 
 		return nullptr;
 	}
 
-	//////////////// STRUCTURED BUFFER ////////////////////////////////////////////////////
-	structured_buffer::structured_buffer(const d3d12_buffer_init_info& info)
-		:_buffer{ info,false }, _stride{ info.stride }
+	//////////////// UAV CLEARABLE BUFFER ////////////////////////////////////////////////////
+	uav_clearable_buffer::uav_clearable_buffer(const d3d12_buffer_init_info& info)
+		:_buffer{ info,false }
 	{
-		assert(info.size && info.size == (info.stride * info.element_count));
-		assert(info.alignment > 0);
+		assert(info.size && info.alignment);
 		NAME_D3D12_OBJECT_INDEXED(buffer(), info.size, L"Structured Buffer - size");
 
-		if (info.create_uav)
-		{
-			assert(info.flags && D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS);
-			_uav = core::uav_heap().allocate();
-			_uav_shader_visible = core::srv_heap().allocate();
-			D3D12_UNORDERED_ACCESS_VIEW_DESC desc{};
-			desc.ViewDimension = D3D12_UAV_DIMENSION_BUFFER;
-			desc.Format = DXGI_FORMAT_UNKNOWN;
-			desc.Buffer.CounterOffsetInBytes = 0;
-			desc.Buffer.FirstElement = 0;
-			desc.Buffer.Flags = D3D12_BUFFER_UAV_FLAG_NONE;
-			desc.Buffer.NumElements = info.element_count;
-			desc.Buffer.StructureByteStride = info.stride;
+		assert(info.flags && D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS);
+		_uav = core::uav_heap().allocate();
+		_uav_shader_visible = core::srv_heap().allocate();
+		D3D12_UNORDERED_ACCESS_VIEW_DESC desc{};
+		desc.ViewDimension = D3D12_UAV_DIMENSION_BUFFER;
+		desc.Format = DXGI_FORMAT_R32_UINT;
+		desc.Buffer.CounterOffsetInBytes = 0;
+		desc.Buffer.FirstElement = 0;
+		desc.Buffer.Flags = D3D12_BUFFER_UAV_FLAG_NONE;
+		desc.Buffer.NumElements = _buffer.size() / sizeof(u32);
 
-			core::device()->CreateUnorderedAccessView(buffer(), nullptr, &desc, _uav.cpu);
-			core::device()->CopyDescriptorsSimple(1, _uav_shader_visible.cpu, _uav.cpu, core::srv_heap().type());
+		core::device()->CreateUnorderedAccessView(buffer(), nullptr, &desc, _uav.cpu);
+		core::device()->CopyDescriptorsSimple(1, _uav_shader_visible.cpu, _uav.cpu, core::srv_heap().type());
 
-		}
 	}
 
-	void structured_buffer::release()
+	void uav_clearable_buffer::release()
 	{
 		core::srv_heap().free(_uav_shader_visible);
 		core::uav_heap().free(_uav);
@@ -211,7 +206,7 @@ namespace primal::graphics::d3d12
 			assert(!info.heap);
 			_resource = info.resource;
 		}
-		else if (info.heap &&info.desc)
+		else if (info.heap && info.desc)
 		{
 			assert(!info.resource);
 			DXCall(device->CreatePlacedResource(

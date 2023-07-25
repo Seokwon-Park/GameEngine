@@ -12,12 +12,12 @@ groupshared uint _lightIndexStartOffset;             // offset in the global lig
 groupshared uint _lightIndexList[MaxLightsPerGroup]; // indices of lights that affect this tile.
 
 
-ConstantBuffer<GlobalShaderData> GlobalData : register(b0, space0);
-ConstantBuffer<LightCullingDispatchParameters> ShaderParams : register(b1 , space0);
-StructuredBuffer<Frustum> Frustums : register(t0 , space0);
-StructuredBuffer<LightCullingLightInfo> Lights : register(t1 , space0);
+ConstantBuffer<GlobalShaderData>                GlobalData          : register(b0, space0);
+ConstantBuffer<LightCullingDispatchParameters>  ShaderParams        : register(b1 , space0);
+StructuredBuffer<Frustum>                       Frustums            : register(t0 , space0);
+StructuredBuffer<LightCullingLightInfo>         Lights              : register(t1 , space0);
 
-RWStructuredBuffer<uint> LightIndexCounter : register(u0, space0);
+RWStructuredBuffer<uint>                        LightIndexCounter   : register(u0, space0);
 RWStructuredBuffer<uint2> LightGrid_Opaque: register(u1, space0);
 RWStructuredBuffer<uint> LightIndexList_Opaque: register(u3, space0);
 

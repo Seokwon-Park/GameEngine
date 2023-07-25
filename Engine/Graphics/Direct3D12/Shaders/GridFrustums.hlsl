@@ -1,8 +1,8 @@
 #include "Common.hlsli"
 
 ConstantBuffer<GlobalShaderData> GlobalData : register(b0, space0);
-ConstantBuffer<LightCullingDispatchParameters> ShaderParams : register(b1 , space0);
-RWStructuredBuffer<Frustum> Frustums : register(u0 , space0);
+ConstantBuffer<LightCullingDispatchParameters> ShaderParams : register(b1, space0);
+RWStructuredBuffer<Frustum> Frustums : register(u0, space0);
 
 // Implementation of grid frustums shader is based on
 // "Forward vs Deferred vs Forward+ Rendering with DirectX 11" (2015) by Jeremisah van Oosten.
@@ -48,4 +48,4 @@ void ComputeGridFrustumsCS(uint3 DispatchThreadID : SV_DispatchThreadID)
     
     // Store the computed frustum in global memory form thread IDs that are in bounds of the grid.
     Frustums[x + (y * ShaderParams.NumThreads.x)] = frustum;
-   }
+}

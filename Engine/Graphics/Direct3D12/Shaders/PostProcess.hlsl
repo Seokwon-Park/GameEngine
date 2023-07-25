@@ -32,11 +32,11 @@ float4 Heatmap(StructuredBuffer<uint2> buffer, float2 posXY, float blend)
     const float3 mapTex[] =
     {
         float3(0, 0, 0),
-            float3(0, 0, 1),
-            float3(0, 1, 1),
-            float3(0, 1, 0),
-            float3(1, 1, 0),
-            float3(1, 0, 0),
+        float3(0, 0, 1),
+        float3(0, 1, 1),
+        float3(0, 1, 0),
+        float3(1, 1, 0),
+        float3(1, 0, 0),
     };
     const uint mapTexLen = 5;
     const uint maxHeat = 40;
@@ -89,9 +89,9 @@ float4 PostProcessPS(in noperspective float4 Position : SV_Position,
     if (idx.y % 2 == 0) c += 0.1f;
 
     return float4((float3)c, 1.f);
-#elif 1 // LIGHT GRID OPAQUE
-    return Heatmap(LightGridOpaque, Position.xy, 0.75f);
-#elif 0 // SCENE
+#elif 0 // LIGHT GRID OPAQUE
+    return Heatmap(LightGridOpaque, Position.xy, 0.5f);
+#elif 1 // SCENE
 
     Texture2D gpassMain = ResourceDescriptorHeap[ShaderParams.GPassMainBufferIndex];
     return float4(gpassMain[Position.xy].xyz, 1.f);

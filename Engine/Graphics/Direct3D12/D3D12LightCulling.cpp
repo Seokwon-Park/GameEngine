@@ -30,7 +30,7 @@ namespace primal::graphics::d3d12::delight
 		{
 			d3d12_buffer							frustums;
 			d3d12_buffer							light_grid_and_index_list;
-			structured_buffer						light_index_counter;
+			uav_clearable_buffer						light_index_counter;
 			hlsl::LightCullingDispatchParameters	grid_frustums_dispatch_params{};
 			hlsl::LightCullingDispatchParameters	light_culling_dispatch_params{};
 			u32										frustum_count{ 0 };
@@ -135,9 +135,8 @@ namespace primal::graphics::d3d12::delight
 
 				if (!culler.light_index_counter.buffer())
 				{
-					info = structured_buffer::get_default_init_info(sizeof(math::u32v4), 1);
-					info.create_uav = true;
-					culler.light_index_counter = structured_buffer{ info };
+					info = uav_clearable_buffer::get_default_init_info(1);
+					culler.light_index_counter = uav_clearable_buffer{ info };
 					NAME_D3D12_OBJECT_INDEXED(culler.light_index_counter.buffer(), core::current_frame_index(), L"Light Index Counter Buffer");
 				}
 			}
@@ -291,7 +290,7 @@ namespace primal::graphics::d3d12::delight
 		cmd_list->SetComputeRootConstantBufferView(param::constants, cbuffer.gpu_address(buffer));
 		cmd_list->SetComputeRootUnorderedAccessView(param::frustums_out_or_index_counter, culler.light_index_counter.gpu_address());
 		cmd_list->SetComputeRootShaderResourceView(param::frustums_in, culler.frustums.gpu_address());
-		cmd_list->SetComputeRootShaderResourceView(param::culling_info, light::cullable_light_buffer(d3d12_info.frame_index));
+		cmd_list->SetComputeRootShaderResourceView(param::culling_info, light::culling_info_buffer(d3d12_info.frame_index));
 		cmd_list->SetComputeRootUnorderedAccessView(param::light_grid_opaque, culler.light_grid_and_index_list.gpu_address());
 		cmd_list->SetComputeRootUnorderedAccessView(param::light_index_list_opaque, culler.light_index_list_opaque_buffer);
 
