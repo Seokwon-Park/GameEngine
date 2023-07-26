@@ -126,7 +126,7 @@ float3 PointLight(float3 N, float3 worldPosition, float3 V, LightParameters ligh
     {
         const float dRcp = rsqrt(dSq);
         L *= dRcp;
-        color = CalculateLighting(N, L, V, light.Color * light.Intensity * 0.2f);
+        color = saturate(dot(N, L)) * light.Color * light.Intensity * 0.2f;
     }
 #else
 #endif
@@ -145,7 +145,7 @@ float3 SpotLight(float3 N, float3 worldPosition, float3 V, LightParameters light
         L *= dRcp;
         const float CosAngleToLight = saturate(dot(-L, light.Direction));
         const float angularAttenuation = float(light.CosPenumbra < CosAngleToLight);
-        color = CalculateLighting(N, L, V, light.Color * light.Intensity * angularAttenuation * 0.2f);
+        color = saturate(dot(N, L))  *light.Color * light.Intensity * angularAttenuation * 0.2f;
     }
 #else
 #endif
