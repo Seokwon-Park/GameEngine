@@ -44,7 +44,7 @@ void {0}::update(float dt)
 
 
         private static readonly string _hCode = @"#pragma once
-namespace {1} 
+namespace {1}
 {{
 class {0} : public primal::script::entity_script
 {{

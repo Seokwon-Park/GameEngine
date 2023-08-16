@@ -115,9 +115,9 @@ void generate_lights()
 #else
 	srand(37);
 
-	constexpr f32 scale1{ 1 };
+	constexpr f32 scale1{ 2 };
 	constexpr math::v3 scale{ 1.f * scale1, 0.5f * scale1, 1.f * scale1 };
-	constexpr s32 dim{ 20 };
+	constexpr s32 dim{ 13 };
 	for(s32 x{-dim}; x <dim; ++x)
 	{
 		for (s32 y{ 0 }; y < 2*dim; ++y)
@@ -125,9 +125,9 @@ void generate_lights()
 			for (s32 z{ -dim }; z < dim; ++z)
 			{
 				create_light({ (f32)(x * scale.x), (f32)(y * scale.y), (f32)(z * scale.z) },
-					{ 3.14f, random(), 0.f }, random() > 0.5f ? graphics::light::spot : graphics::light::point, left_set);
+					{ random() * 3.14f, random() * 3.14f, random() * 3.14f }, random() > 0.5f ? graphics::light::spot : graphics::light::point, left_set);
 				create_light({ (f32)(x * scale.x), (f32)(y * scale.y), (f32)(z * scale.z) },
-					{ 3.14f, random(), 0.f }, random() > 0.5f ? graphics::light::spot : graphics::light::point, right_set);
+					{ random() * 3.14f, random() * 3.14f, random() * 3.14f }, random() > 0.5f ? graphics::light::spot : graphics::light::point, right_set);
 			}
 		}
 	}

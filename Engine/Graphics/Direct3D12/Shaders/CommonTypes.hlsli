@@ -6,20 +6,20 @@
 
 struct GlobalShaderData
 {
-    float4x4    View;
-    float4x4    Projection;
-    float4x4    InvProjection;
-    float4x4    ViewProjection;
-    float4x4    InvViewProjection;
+    float4x4 View;
+    float4x4 Projection;
+    float4x4 InvProjection;
+    float4x4 ViewProjection;
+    float4x4 InvViewProjection;
     
-    float3      CameraPosition;
-    float       ViewWidth;
+    float3 CameraPosition;
+    float ViewWidth;
     
-    float3      CameraDirection;
-    float       ViewHeight;
+    float3 CameraDirection;
+    float ViewHeight;
     
-    uint       NumDirectionalLights;    
-    float      DeltaTime;
+    uint NumDirectionalLights;
+    float DeltaTime;
 };
 
 struct PerObjectData
@@ -68,9 +68,9 @@ struct Frustum
 #ifndef __cplusplus
 struct ComputeShaderInput
 {
-    uint3 GroupID : SV_GroupID;                     // 3D index of the thread group in the dispatch.
-    uint3 GroutThreadID : SV_GroupThreadID;         // 3D index of local thread ID in a thread group.
-    uint3 DispatchThreadID : SV_DispatchThreadID;   // 3D index of global thread ID in the dispatch.
+    uint3 GroupID : SV_GroupID; // 3D index of the thread group in the dispatch.
+    uint3 GroutThreadID : SV_GroupThreadID; // 3D index of local thread ID in a thread group.
+    uint3 DispatchThreadID : SV_DispatchThreadID; // 3D index of global thread ID in the dispatch.
     uint GroupIndex : SV_GroupIndex; // Flattened local SV_GroupIndex of the SV_DispatchThreadID within a thread group.
 };
 #endif
@@ -78,15 +78,15 @@ struct ComputeShaderInput
 struct LightCullingDispatchParameters
 {
     // Number of groups dispatched. (This parameter is not available as an HLSL system value!)
-    uint2 NumThreadGroups;    
+    uint2 NumThreadGroups;
     // Total number of threads dispatched. (Also not available as an HLSL system value!)
     // NOTE: This value may be less than the actual number of threads executed
     //       if the screen size is not evenly divisible by the block size.
-    uint2 NumThreads;    
+    uint2 NumThreads;
     // Number of lights for culling (doesn't include directional lights, because those can't be culled).
-    uint NumLights;    
+    uint NumLights;
     // The index of current depth buffer in SRV descriptor heap
-    uint DepthBufferSrvIndex;    
+    uint DepthBufferSrvIndex;
 };
 
 
@@ -98,14 +98,15 @@ struct LightCullingLightInfo
     float Range;
     
     float3 Direction;
-    #if USE_BOUNDING_SPHERES
+#if USE_BOUNDING_SPHERES
+    // If this is set to -1 then the light is a point light.
     float CosPenumbra;
-    #else
+#else
     float ConeRadius;
-    #endif
+    
     uint Type;
     float3 _pad;
-    
+#endif
 };
 
 // Contains light data that's formatted and ready to copy
@@ -116,16 +117,19 @@ struct LightParameters
     float Intensity;
     
     float3 Direction;
-    uint Type;
-    
-    float3 Color;
     float Range;
     
-    float3 Attenuation;
-    float CosUmbra;         //Cosine of the half angle of penumbra
+    float3 Color;
+    float CosUmbra; //Cosine of the half angle of penumbra
     
-    float CosPenumbra;      //Cosine of the half angle of penumbra
+    float3 Attenuation;
+    float CosPenumbra; //Cosine of the half angle of penumbra
+        
+#if !USE_BOUNDING_SPHERES
+    uint Type;
     float3 _pad;
+#endif
+    
 };
 
 struct DirectionalLightParameters
